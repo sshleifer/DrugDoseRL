@@ -58,7 +58,7 @@ def compute_pharma_dose_acc(data, warfarin):
     carbamazepine = [1 if c == 1 else 0 for c in list(data["Carbamazepine (Tegretol)"])]
     phenytoin = [1 if p == 1 else 0 for p in list(data["Phenytoin (Dilantin)"])]
     rifampin = [1 if r == 1 else 0 for r in list(data["Rifampin or Rifampicin"])]
-    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(0, 1).values
+    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
     #enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i]) for i in range(len(rifampin))]
     amiodarone = list(data['Amiodarone (Cordarone)'])
     vk_ag = (data[VK_COL] == 'A/G').values
