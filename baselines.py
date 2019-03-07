@@ -1,10 +1,20 @@
 import pandas as pd
 import numpy as np
 
-def compute_fixed_dose_acc(warfarin):
-    meds = [1 if d == "medium" else 0 for d in warfarin]
-    print("Fixed Dose accuracy: %s" % (sum(meds) / len(meds)))
+WT_COL = 'Weight (kg)'
+HEIGHT_COL = 'Height (cm)'
 
+
+def compute_fixed_dose_acc(warfarin):
+    arr = np.array(warfarin) == 'medium'
+    return arr.mean()
+
+
+ENZYME_COLS = [
+    "Carbamazepine (Tegretol)",
+    "Phenytoin (Dilantin)",
+    "Rifampin or Rifampicin",
+]
 
 def compute_clinical_dose_acc(data, warfarin):
     dec_age = [int(a[0]) for a in list(data['Age'])]
@@ -16,7 +26,8 @@ def compute_clinical_dose_acc(data, warfarin):
     carbamazepine = [1 if c == 1 else 0 for c in list(data["Carbamazepine (Tegretol)"])]
     phenytoin = [1 if p == 1 else 0 for p in list(data["Phenytoin (Dilantin)"])]
     rifampin = [1 if r == 1 else 0 for r in list(data["Rifampin or Rifampicin"])]
-    enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i]) for i in range(len(rifampin))]
+    enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i])
+              for i in range(len(rifampin))]
     amiodarone = list(data['Amiodarone (Cordarone)'])
 
     num_correct = 0
@@ -25,34 +36,42 @@ def compute_clinical_dose_acc(data, warfarin):
         dose = dose - 0.6752 * asian[i] + 0.4060 * black[i] + 0.0443 * missing[i]
         dose = dose + 1.2799 * enzyme[i] - 0.5695 * amiodarone[i]
         dose = dose ** 2
-        dose = "low" if dose < 21 else ("high" if dose > 49 else "medium")
-        if dose == warfarin[i]:
+        if dose2str(dose) == warfarin[i]:
             num_correct += 1
 
-    print("Clinical Dose Algorithm accuracy: %s" % (num_correct / len(warfarin)))
+    print(f'Clinical Dose Algorithm accuracy: { (num_correct / len(warfarin)):.2f} out of {len(warfarin)}')
+    return num_correct / len(warfarin)
+
+VK_COL = 'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T'
+DUMMY_COLS = ['Cyp2C9 genotypes', 'Race', VK_COL,]
+
+
 
 
 def compute_pharma_dose_acc(data, warfarin):
     dec_age = [int(str(a)[0]) for a in list(data['Age'])]
-    height = list(data['Height (cm)'])
-    weight = list(data['Weight (kg)'])
+    height = list(data[HEIGHT_COL])
+    weight = list(data[WT_COL])
     asian = [1 if r == "Asian" else 0 for r in list(data['Race'])] 
     black = [1 if r == "Black or African American" else 0 for r in list(data['Race'])] 
     missing = [1 if r == "Unknown" else 0 for r in list(data['Race'])] 
     carbamazepine = [1 if c == 1 else 0 for c in list(data["Carbamazepine (Tegretol)"])]
     phenytoin = [1 if p == 1 else 0 for p in list(data["Phenytoin (Dilantin)"])]
     rifampin = [1 if r == 1 else 0 for r in list(data["Rifampin or Rifampicin"])]
-    enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i]) for i in range(len(rifampin))]
+    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(0, 1).values
+    #enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i]) for i in range(len(rifampin))]
     amiodarone = list(data['Amiodarone (Cordarone)'])
-    vk_ag = [1 if g == "A/G" else 0 for g in list(data['VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T'])]
-    vk_aa = [1 if g == "A/A" else 0 for g in list(data['VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T'])]
-    vk_unknown = [1 if pd.isnull(g) else 0 for g in list(data['VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T'])]
-    cyp_1_2 = [1 if g == "*1/*2" else 0 for g in list(data['Cyp2C9 genotypes'])]
-    cyp_1_3 = [1 if g == "*1/*3" else 0 for g in list(data['Cyp2C9 genotypes'])]
-    cyp_2_2 = [1 if g == "*2/*2" else 0 for g in list(data['Cyp2C9 genotypes'])]
-    cyp_2_3 = [1 if g == "*2/*3" else 0 for g in list(data['Cyp2C9 genotypes'])]
-    cyp_3_3 = [1 if g == "*3/*3" else 0 for g in list(data['Cyp2C9 genotypes'])]
-    cyp_unknown = [1 if pd.isnull(g) else 0 for g in list(data['Cyp2C9 genotypes'])]
+    vk_ag = (data[VK_COL] == 'A/G').values
+    vk_aa = (data[VK_COL] == 'A/A').values
+    vk_unknown = data[VK_COL].isnull().values
+    CYP_COL = 'Cyp2C9 genotypes'
+    cyp = list(data[CYP_COL])
+    cyp_1_2 = [1 if g == "*1/*2" else 0 for g in cyp]
+    cyp_1_3 = [1 if g == "*1/*3" else 0 for g in cyp]
+    cyp_2_2 = [1 if g == "*2/*2" else 0 for g in cyp]
+    cyp_2_3 = [1 if g == "*2/*3" else 0 for g in cyp]
+    cyp_3_3 = [1 if g == "*3/*3" else 0 for g in cyp]
+    cyp_unknown = data[CYP_COL].isnull().values
 
     num_correct = 0
     for i in range(len(warfarin)):
@@ -66,13 +85,23 @@ def compute_pharma_dose_acc(data, warfarin):
         if dose == warfarin[i]:
             num_correct += 1
 
-    print("Pharmacogenetic Dose Algorithm accuracy: %s" % (num_correct / len(warfarin)))
+    print(f"Pharmacogenetic Dose Algorithm accuracy:  {(num_correct / len(warfarin))} out of {len(warfarin)}")
+    return (num_correct / len(warfarin))
+
+def dose2str(dose):
+    if dose < 21:
+        return "low"
+    elif dose > 49:
+        return "high"
+    else:
+        return "medium"
 
 
 if __name__ == "__main__":
     data = pd.read_csv("warfarin_data/warfarin.csv")
     data = data.dropna(subset=['Age', 'Therapeutic Dose of Warfarin'])
-    data.rename(columns={"Therapeutic Dose of Warfarin": "warfarin"}, inplace=True)
+    data.rename(columns={"Therapeutic Dose of Warfarin": "warfarin", }, inplace=True)
+    data['warfarin_str'] = data['warfarin'].apply(dose2str)
 
     warfarin = list(data.warfarin)
     for i in range(len(warfarin)):
@@ -83,6 +112,9 @@ if __name__ == "__main__":
         else:
             warfarin[i] = "medium"
 
-    compute_fixed_dose_acc(warfarin)
-    compute_clinical_dose_acc(data, warfarin)
-    compute_pharma_dose_acc(data, warfarin)
+    fixed_dose = compute_fixed_dose_acc(warfarin)
+    clin_dose = compute_clinical_dose_acc(data, warfarin)
+    pharma_dose = compute_pharma_dose_acc(data, warfarin)
+    assert np.round(fixed_dose,2) == .61
+    assert np.round(clin_dose, 2) == .53
+    assert np.round(pharma_dose,2) == .53, pharma_dose
