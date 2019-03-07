@@ -1,5 +1,7 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from constants import ENZYME_COLS
 
 WT_COL = 'Weight (kg)'
 HEIGHT_COL = 'Height (cm)'
@@ -7,14 +9,9 @@ HEIGHT_COL = 'Height (cm)'
 
 def compute_fixed_dose_acc(warfarin):
     arr = np.array(warfarin) == 'medium'
+    print(f'Fixed dose: {arr.mean()}')
     return arr.mean()
 
-
-ENZYME_COLS = [
-    "Carbamazepine (Tegretol)",
-    "Phenytoin (Dilantin)",
-    "Rifampin or Rifampicin",
-]
 
 def compute_clinical_dose_acc(data, warfarin):
     dec_age = [int(a[0]) for a in list(data['Age'])]
@@ -22,15 +19,9 @@ def compute_clinical_dose_acc(data, warfarin):
     weight = list(data['Weight (kg)'])
     asian = [1 if r == "Asian" else 0 for r in list(data['Race'])] 
     black = [1 if r == "Black or African American" else 0 for r in list(data['Race'])] 
-    missing = [1 if r == "Unknown" else 0 for r in list(data['Race'])] 
-    carbamazepine = [1 if c == 1 else 0 for c in list(data["Carbamazepine (Tegretol)"])]
-    phenytoin = [1 if p == 1 else 0 for p in list(data["Phenytoin (Dilantin)"])]
-    rifampin = [1 if r == 1 else 0 for r in list(data["Rifampin or Rifampicin"])]
-    enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i])
-              for i in range(len(rifampin))]
+    missing = [1 if r == "Unknown" else 0 for r in list(data['Race'])]
     enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
     amiodarone = list(data['Amiodarone (Cordarone)'])
-
     num_correct = 0
     for i in range(len(warfarin)):
         dose = 4.0376 - 0.2546 * dec_age[i] + 0.0118 * height[i] + 0.0134 * weight[i]
@@ -44,8 +35,12 @@ def compute_clinical_dose_acc(data, warfarin):
     return num_correct / len(warfarin)
 
 VK_COL = 'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T'
-DUMMY_COLS = ['Cyp2C9 genotypes', 'Race', VK_COL,]
 
+
+def preprocess(data):
+    data['enzyme_sum'] = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
+    data['Age'] = data['Age'].str.partition('-')[0].str.strip('+').astype(int)
+    return data
 
 def compute_pharma_dose_acc(data, warfarin):
     dec_age = [int(str(a)[0]) for a in list(data['Age'])]
@@ -53,10 +48,7 @@ def compute_pharma_dose_acc(data, warfarin):
     weight = list(data[WT_COL])
     asian = [1 if r == "Asian" else 0 for r in list(data['Race'])] 
     black = [1 if r == "Black or African American" else 0 for r in list(data['Race'])] 
-    missing = [1 if r == "Unknown" else 0 for r in list(data['Race'])] 
-    carbamazepine = [1 if c == 1 else 0 for c in list(data["Carbamazepine (Tegretol)"])]
-    phenytoin = [1 if p == 1 else 0 for p in list(data["Phenytoin (Dilantin)"])]
-    rifampin = [1 if r == 1 else 0 for r in list(data["Rifampin or Rifampicin"])]
+    missing = [1 if r == "Unknown" else 0 for r in list(data['Race'])]
     enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
     # data[ENZYME_COLS].fillna(0).sum(1).clip(0, 1).values  makes its acc go to 64%
     amiodarone = list(data['Amiodarone (Cordarone)'])
@@ -80,7 +72,7 @@ def compute_pharma_dose_acc(data, warfarin):
         dose = dose - 0.1092 * asian[i] - 0.2760 * black[i] - 0.1032 * missing[i]
         dose = dose + 1.1816 * enzyme[i] - 0.5503 * amiodarone[i]
         dose = dose ** 2
-        dose = "low" if dose < 21 else ("high" if dose > 49 else "medium")
+        dose = dose2str(dose)
         if dose == warfarin[i]:
             num_correct += 1
 
@@ -101,19 +93,10 @@ if __name__ == "__main__":
     data = data.dropna(subset=['Age', 'Therapeutic Dose of Warfarin'])
     data.rename(columns={"Therapeutic Dose of Warfarin": "warfarin", }, inplace=True)
     data['warfarin_str'] = data['warfarin'].apply(dose2str)
-
-    warfarin = list(data.warfarin)
-    for i in range(len(warfarin)):
-        if warfarin[i] < 21:
-            warfarin[i] = "low"
-        elif warfarin[i] > 49:
-            warfarin[i] = "high"
-        else:
-            warfarin[i] = "medium"
-
-    fixed_dose = compute_fixed_dose_acc(warfarin)
-    clin_dose = compute_clinical_dose_acc(data, warfarin)
-    pharma_dose = compute_pharma_dose_acc(data, warfarin)
+    targ_str_array = data['warfarin_str'].values
+    fixed_dose = compute_fixed_dose_acc(targ_str_array)
+    clin_dose = compute_clinical_dose_acc(data, targ_str_array)
+    pharma_dose = compute_pharma_dose_acc(data, targ_str_array)
     assert np.round(fixed_dose,2) == .61
     assert np.round(clin_dose, 2) == .53
     assert np.round(pharma_dose,2) == .53, pharma_dose
