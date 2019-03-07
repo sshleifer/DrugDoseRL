@@ -28,6 +28,7 @@ def compute_clinical_dose_acc(data, warfarin):
     rifampin = [1 if r == 1 else 0 for r in list(data["Rifampin or Rifampicin"])]
     enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i])
               for i in range(len(rifampin))]
+    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
     amiodarone = list(data['Amiodarone (Cordarone)'])
 
     num_correct = 0
@@ -46,8 +47,6 @@ VK_COL = 'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T'
 DUMMY_COLS = ['Cyp2C9 genotypes', 'Race', VK_COL,]
 
 
-
-
 def compute_pharma_dose_acc(data, warfarin):
     dec_age = [int(str(a)[0]) for a in list(data['Age'])]
     height = list(data[HEIGHT_COL])
@@ -59,7 +58,7 @@ def compute_pharma_dose_acc(data, warfarin):
     phenytoin = [1 if p == 1 else 0 for p in list(data["Phenytoin (Dilantin)"])]
     rifampin = [1 if r == 1 else 0 for r in list(data["Rifampin or Rifampicin"])]
     enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
-    #enzyme = [max(1, carbamazepine[i] + phenytoin[i] + rifampin[i]) for i in range(len(rifampin))]
+    # data[ENZYME_COLS].fillna(0).sum(1).clip(0, 1).values  makes its acc go to 64%
     amiodarone = list(data['Amiodarone (Cordarone)'])
     vk_ag = (data[VK_COL] == 'A/G').values
     vk_aa = (data[VK_COL] == 'A/A').values
