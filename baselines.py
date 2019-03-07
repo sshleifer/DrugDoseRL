@@ -70,7 +70,7 @@ def compute_pharma_dose_acc(data, warfarin):
 
 
 if __name__ == "__main__":
-    data = pd.read_csv("data/warfarin.csv")
+    data = pd.read_csv("warfarin_data/warfarin.csv")
     data = data.dropna(subset=['Age'])
     data.rename(columns={"Therapeutic Dose of Warfarin": "warfarin"}, inplace=True)
 
