@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from constants import ENZYME_COLS
+from utils import dose2str
 
 WT_COL = 'Weight (kg)'
 HEIGHT_COL = 'Height (cm)'
@@ -20,8 +21,8 @@ def compute_clinical_dose_acc(data, warfarin):
     asian = [1 if r == "Asian" else 0 for r in list(data['Race'])] 
     black = [1 if r == "Black or African American" else 0 for r in list(data['Race'])] 
     missing = [1 if r == "Unknown" else 0 for r in list(data['Race'])]
-    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
-    amiodarone = list(data['Amiodarone (Cordarone)'])
+    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(0, 1).values
+    amiodarone = data['Amiodarone (Cordarone)'].fillna(0).values
     num_correct = 0
     for i in range(len(warfarin)):
         dose = 4.0376 - 0.2546 * dec_age[i] + 0.0118 * height[i] + 0.0134 * weight[i]
@@ -31,7 +32,7 @@ def compute_clinical_dose_acc(data, warfarin):
         if dose2str(dose) == warfarin[i]:
             num_correct += 1
 
-    print(f'Clinical Dose Algorithm accuracy: { (num_correct / len(warfarin)):.2f} out of {len(warfarin)}')
+    print(f'Clinical Dose Algorithm accuracy: { (num_correct / len(warfarin))}')
     return num_correct / len(warfarin)
 
 VK_COL = 'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T'
@@ -49,19 +50,17 @@ def compute_pharma_dose_acc(data, warfarin):
     asian = [1 if r == "Asian" else 0 for r in list(data['Race'])] 
     black = [1 if r == "Black or African American" else 0 for r in list(data['Race'])] 
     missing = [1 if r == "Unknown" else 0 for r in list(data['Race'])]
-    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(1, None).values
-    # data[ENZYME_COLS].fillna(0).sum(1).clip(0, 1).values  makes its acc go to 64%
-    amiodarone = list(data['Amiodarone (Cordarone)'])
+    enzyme = data[ENZYME_COLS].fillna(0).sum(1).clip(0, 1).values
+    amiodarone = data['Amiodarone (Cordarone)'].fillna(0).values
     vk_ag = (data[VK_COL] == 'A/G').values
     vk_aa = (data[VK_COL] == 'A/A').values
     vk_unknown = data[VK_COL].isnull().values
     CYP_COL = 'Cyp2C9 genotypes'
-    cyp = list(data[CYP_COL])
-    cyp_1_2 = [1 if g == "*1/*2" else 0 for g in cyp]
-    cyp_1_3 = [1 if g == "*1/*3" else 0 for g in cyp]
-    cyp_2_2 = [1 if g == "*2/*2" else 0 for g in cyp]
-    cyp_2_3 = [1 if g == "*2/*3" else 0 for g in cyp]
-    cyp_3_3 = [1 if g == "*3/*3" else 0 for g in cyp]
+    cyp_1_2 = (data[CYP_COL] == "*1/*2").values
+    cyp_1_3 = (data[CYP_COL] == "*1/*3").values
+    cyp_2_2 = (data[CYP_COL] == "*2/*2").values
+    cyp_2_3 = (data[CYP_COL] == "*2/*3").values
+    cyp_3_3 = (data[CYP_COL] == "*3/*3").values
     cyp_unknown = data[CYP_COL].isnull().values
 
     num_correct = 0
@@ -76,17 +75,8 @@ def compute_pharma_dose_acc(data, warfarin):
         if dose == warfarin[i]:
             num_correct += 1
 
-    print(f"Pharmacogenetic Dose Algorithm accuracy:  {(num_correct / len(warfarin))} out of {len(warfarin)}")
+    print(f"Pharmacogenetic Dose Algorithm accuracy:  {(num_correct / len(warfarin))}")
     return (num_correct / len(warfarin))
-
-def dose2str(dose):
-    if dose < 21:
-        return "low"
-    elif dose > 49:
-        return "high"
-    else:
-        return "medium"
-
 
 if __name__ == "__main__":
     data = pd.read_csv("warfarin_data/warfarin.csv")
@@ -97,6 +87,3 @@ if __name__ == "__main__":
     fixed_dose = compute_fixed_dose_acc(targ_str_array)
     clin_dose = compute_clinical_dose_acc(data, targ_str_array)
     pharma_dose = compute_pharma_dose_acc(data, targ_str_array)
-    assert np.round(fixed_dose,2) == .61
-    assert np.round(clin_dose, 2) == .53
-    assert np.round(pharma_dose,2) == .53, pharma_dose

@@ -1,0 +1,151 @@
+Age
+Height (cm)
+Weight (kg)
+Diabetes
+Congestive Heart Failure and/or Cardiomyopathy
+Valve Replacement
+Aspirin
+Acetaminophen or Paracetamol (Tylenol)
+Was Dose of Acetaminophen or Paracetamol (Tylenol) >1300mg/day
+Simvastatin (Zocor)
+Atorvastatin (Lipitor)
+Fluvastatin (Lescol)
+Lovastatin (Mevacor)
+Pravastatin (Pravachol)
+Rosuvastatin (Crestor)
+Cerivastatin (Baycol)
+Amiodarone (Cordarone)
+Carbamazepine (Tegretol)
+Phenytoin (Dilantin)
+Rifampin or Rifampicin
+Sulfonamide Antibiotics
+Macrolide Antibiotics
+Anti-fungal Azoles
+Herbal Medications, Vitamins, Supplements
+Target INR
+Subject Reached Stable Dose of Warfarin
+INR on Reported Therapeutic Dose of Warfarin
+Current Smoker
+enzyme_sum
+taking_acetaminophen
+taking_aspirin
+taking_amiodarone
+taking_methimazole
+taking_simvastatin
+taking_propythiouracil
+taking_barbiturates
+taking_cholestyramine
+taking_carbamazepine
+Gender_female
+Gender_male
+VKORC1 3730 consensus_A/A
+VKORC1 3730 consensus_A/G
+VKORC1 3730 consensus_G/G
+VKORC1 1542 consensus_C/C
+VKORC1 1542 consensus_C/G
+VKORC1 1542 consensus_G/G
+VKORC1 1173 consensus_C/C
+VKORC1 1173 consensus_C/T
+VKORC1 1173 consensus_T/T
+VKORC1 497 consensus_G/G
+VKORC1 497 consensus_G/T
+VKORC1 497 consensus_T/T
+VKORC1 -1639 consensus_A/A
+VKORC1 -1639 consensus_A/G
+VKORC1 -1639 consensus_G/G
+VKORC1 QC genotype: -4451 C>A (861); Chr16:31018002; rs17880887; A/C_A/A
+VKORC1 QC genotype: -4451 C>A (861); Chr16:31018002; rs17880887; A/C_A/C
+VKORC1 QC genotype: -4451 C>A (861); Chr16:31018002; rs17880887; A/C_C/C
+VKORC1 genotype: -4451 C>A (861); Chr16:31018002; rs17880887; A/C_A/A
+VKORC1 genotype: -4451 C>A (861); Chr16:31018002; rs17880887; A/C_A/C
+VKORC1 genotype: -4451 C>A (861); Chr16:31018002; rs17880887; A/C_C/C
+VKORC1 QC genotype: 2255C>T (7566); chr16:31011297; rs2359612; A/G_C/C
+VKORC1 QC genotype: 2255C>T (7566); chr16:31011297; rs2359612; A/G_C/T
+VKORC1 QC genotype: 2255C>T (7566); chr16:31011297; rs2359612; A/G_T/T
+VKORC1 genotype: 2255C>T (7566); chr16:31011297; rs2359612; A/G_C/C
+VKORC1 genotype: 2255C>T (7566); chr16:31011297; rs2359612; A/G_C/T
+VKORC1 genotype: 2255C>T (7566); chr16:31011297; rs2359612; A/G_T/T
+VKORC1 QC genotype: 3730 G>A (9041); chr16:31009822; rs7294;  A/G_A/A
+VKORC1 QC genotype: 3730 G>A (9041); chr16:31009822; rs7294;  A/G_A/G
+VKORC1 QC genotype: 3730 G>A (9041); chr16:31009822; rs7294;  A/G_G/G
+VKORC1 genotype: 3730 G>A (9041); chr16:31009822; rs7294;  A/G_A/A
+VKORC1 genotype: 3730 G>A (9041); chr16:31009822; rs7294;  A/G_A/G
+VKORC1 genotype: 3730 G>A (9041); chr16:31009822; rs7294;  A/G_G/G
+VKORC1 QC genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_C/C
+VKORC1 QC genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_C/G
+VKORC1 QC genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G
+VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_C/C
+VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_C/G
+VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G
+VKORC1 2255 consensus_C/C
+VKORC1 2255 consensus_C/T
+VKORC1 2255 consensus_T/T
+VKORC1 QC genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C
+VKORC1 QC genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/T
+VKORC1 QC genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_T/T
+VKORC1 QC genotype: 497T>G (5808); chr16:31013055; rs2884737; A/C_G/G
+VKORC1 QC genotype: 497T>G (5808); chr16:31013055; rs2884737; A/C_G/T
+VKORC1 QC genotype: 497T>G (5808); chr16:31013055; rs2884737; A/C_T/T
+Ethnicity_Hispanic or Latino
+Ethnicity_Unknown
+Ethnicity_not Hispanic or Latino
+VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C
+VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/T
+VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_T/T
+Genotyped QC Cyp2C9*2_*1/*1
+Genotyped QC Cyp2C9*2_*1/*2
+Genotyped QC Cyp2C9*2_*2/*2
+Genotyped QC Cyp2C9*3_*1/*1
+Genotyped QC Cyp2C9*3_*1/*3
+Genotyped QC Cyp2C9*3_*3/*3
+VKORC1 -4451 consensus_A/A
+VKORC1 -4451 consensus_A/C
+VKORC1 -4451 consensus_C/C
+VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_A/A
+VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_A/G
+VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G
+VKORC1 QC genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_A/A
+VKORC1 QC genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_A/G
+VKORC1 QC genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G
+VKORC1 genotype: 497T>G (5808); chr16:31013055; rs2884737; A/C_G/G
+VKORC1 genotype: 497T>G (5808); chr16:31013055; rs2884737; A/C_G/T
+VKORC1 genotype: 497T>G (5808); chr16:31013055; rs2884737; A/C_T/T
+Race_Asian
+Race_Black or African American
+Race_Unknown
+Race_White
+Combined QC CYP2C9_*1/*1
+Combined QC CYP2C9_*1/*2
+Combined QC CYP2C9_*1/*3
+Combined QC CYP2C9_*2/*2
+Combined QC CYP2C9_*2/*3
+Combined QC CYP2C9_*3/*3
+Estimated Target INR Range Based on Indication_1.7-2.8
+Estimated Target INR Range Based on Indication_1.7-3.3
+Estimated Target INR Range Based on Indication_2-3
+Estimated Target INR Range Based on Indication_2-3.5
+Estimated Target INR Range Based on Indication_2.5-3.5
+Estimated Target INR Range Based on Indication_3-4
+Estimated Target INR Range Based on Indication_3.0-4.0
+Cyp2C9 genotypes_*1/*1
+Cyp2C9 genotypes_*1/*11
+Cyp2C9 genotypes_*1/*13
+Cyp2C9 genotypes_*1/*14
+Cyp2C9 genotypes_*1/*2
+Cyp2C9 genotypes_*1/*3
+Cyp2C9 genotypes_*1/*5
+Cyp2C9 genotypes_*1/*6
+Cyp2C9 genotypes_*2/*2
+Cyp2C9 genotypes_*2/*3
+Cyp2C9 genotypes_*3/*3
+CYP2C9 consensus_*1/*1
+CYP2C9 consensus_*1/*11
+CYP2C9 consensus_*1/*13
+CYP2C9 consensus_*1/*14
+CYP2C9 consensus_*1/*2
+CYP2C9 consensus_*1/*3
+CYP2C9 consensus_*1/*5
+CYP2C9 consensus_*1/*6
+CYP2C9 consensus_*2/*2
+CYP2C9 consensus_*2/*3
+CYP2C9 consensus_*3/*3
