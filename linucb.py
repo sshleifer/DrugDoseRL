@@ -47,7 +47,7 @@ def main():
         'Height (cm)',
         'bias'
     ]
-    X_subset = X.loc[:, feature_select]
+    X_subset = X[feature_select]
     num_features = len(feature_select)
     linucb = LinUCB(num_features, X_subset.shape[0])
     total_regret = 0
@@ -67,6 +67,7 @@ def main():
 
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % (1 - total_regret / X.shape[0]))
+
 
 if __name__ == "__main__":
     main()
