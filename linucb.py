@@ -4,10 +4,57 @@ from tqdm import tqdm
 from get_features import get_features
 from utils import dose2str, get_sample_order
 
+
+ALL_CYP_FEATURES = ['Combined QC CYP2C9_*1/*1', 'Combined QC CYP2C9_*1/*2',
+       'Combined QC CYP2C9_*1/*3', 'Combined QC CYP2C9_*2/*2',
+       'Combined QC CYP2C9_*2/*3', 'Combined QC CYP2C9_*3/*3',
+       'CYP2C9 consensus_*1/*1', 'CYP2C9 consensus_*1/*11',
+       'CYP2C9 consensus_*1/*13', 'CYP2C9 consensus_*1/*14',
+       'CYP2C9 consensus_*1/*2', 'CYP2C9 consensus_*1/*3',
+       'CYP2C9 consensus_*1/*5', 'CYP2C9 consensus_*1/*6',
+       'CYP2C9 consensus_*2/*2', 'CYP2C9 consensus_*2/*3',
+       'CYP2C9 consensus_*3/*3']
+
+UCB_FEATURES = [
+    'Age', 'Weight (kg)', 'Height (cm)',
+    'taking_amiodarone',
+    'enzyme_score_2',
+    'Race_White',
+    'Race_Black or African American',
+    'Race_Asian',
+    'Race_Unknown',
+    'Valve Replacement',
+    'Current Smoker',
+    'Ethnicity_not Hispanic or Latino',
+    'Diabetes', 'Congestive Heart Failure and/or Cardiomyopathy', 'bias',
+
+    # proxies for unknown CYP/VKOR
+    'cyp_sum', 'vko_sum',
+
+    'CYP2C9 consensus_*1/*2',
+    'CYP2C9 consensus_*1/*3',
+    'CYP2C9 consensus_*2/*2',
+    'CYP2C9 consensus_*2/*3',
+    'CYP2C9 consensus_*3/*3',
+
+
+    'VKORC1 -1639 consensus_G/G',
+    'VKORC1 1542 consensus_G/G',
+    'VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C',
+    'VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G',
+    'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G',
+    'VKORC1 1173 consensus_C/C',
+
+]
+assert len(UCB_FEATURES) == len(set(UCB_FEATURES)), 'Please remove duplicate feature.'
+
+
 class LinUCB:
     def __init__(self, num_features, num_samples):
         self.order = get_sample_order(num_samples)
         self.alpha = 0.5
+        # formula for alpha in paper
+
         self.A_lst = [np.identity(num_features)] * 3
         self.b_lst = [np.zeros(num_features)] * 3
 
@@ -21,6 +68,7 @@ class LinUCB:
         for i in range(3):
             theta = np.dot(np.linalg.inv(self.A_lst[i]), self.b_lst[i])
             p = np.dot(theta, features)
+            #import ipdb; ipdb.set_trace()
             p += self.alpha * math.sqrt(np.dot(features, np.dot(np.linalg.inv(self.A_lst[i]), features)))
             p_vals.append(p)
         return np.argmax(p_vals)
@@ -40,26 +88,10 @@ def main():
     arms = ["low", "medium", "high"]
     X, y = get_features()
     X['bias'] = 1
-    feature_select = [
-        'Age',
-        'Weight (kg)',
-        'Height (cm)',
-        'VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C',
-        'CYP2C9 consensus_*1/*2',
-        'VKORC1 -1639 consensus_G/G',
-        'VKORC1 1542 consensus_G/G',
-        'Valve Replacement',
-        'VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G',
-        'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G',
-        'Race_White',
-        'Current Smoker',
-        'VKORC1 1173 consensus_C/C',
-        'Ethnicity_not Hispanic or Latino',
-        'Diabetes',
-        'Congestive Heart Failure and/or Cardiomyopathy',
-        'bias'
-    ]
-    X_subset = X[feature_select]
+    feature_select = UCB_FEATURES
+
+    # Use all features from paper
+    X_subset = X[feature_select].astype(float)
     num_features = len(feature_select)
     linucb = LinUCB(num_features, X_subset.shape[0])
     total_regret = 0
