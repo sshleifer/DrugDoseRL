@@ -4,6 +4,7 @@ from tqdm import tqdm
 from get_features import get_features
 from sklearn import linear_model as lm
 from utils import dose2str, get_sample_order
+from linucb import UCB_FEATURES
 
 class Lasso:
     def __init__(self, num_features, num_samples):
@@ -101,25 +102,7 @@ def main():
     arms = ["low", "medium", "high"]
     X, y = get_features()
     X['bias'] = 1
-    feature_select = [
-        'Age',
-        'Weight (kg)',
-        'Height (cm)',
-        'VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C',
-        'CYP2C9 consensus_*1/*2',
-        'VKORC1 -1639 consensus_G/G',
-        'VKORC1 1542 consensus_G/G',
-        'Valve Replacement',
-        'VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G',
-        'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G',
-        'Race_White',
-        'Current Smoker',
-        'VKORC1 1173 consensus_C/C',
-        'Ethnicity_not Hispanic or Latino',
-        'Diabetes',
-        'Congestive Heart Failure and/or Cardiomyopathy',
-        'bias'
-    ]
+    feature_select = UCB_FEATURES
     X_subset = X[feature_select]
     num_features = len(feature_select)
     lasso = Lasso(num_features, X_subset.shape[0])
