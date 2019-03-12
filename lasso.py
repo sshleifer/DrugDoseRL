@@ -78,7 +78,7 @@ class Lasso:
         self.lambda_2_t = self.lambda_2_0 * math.sqrt(
             (math.log(self.iter) + math.log(self.num_features)) / self.iter)
 
-        for i in range(3):
+        for i in range(3):  # forced Sampling
             T_idx = np.array(self.T_sets[i])
             T_idx = T_idx[T_idx <= self.iter]
             if np.size(T_idx) > 0:
