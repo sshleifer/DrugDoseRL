@@ -5,7 +5,7 @@ from get_features import get_features
 from utils import dose2str, get_sample_order
 
 
-CYP_FEATURES = ['Combined QC CYP2C9_*1/*1', 'Combined QC CYP2C9_*1/*2',
+ALL_CYP_FEATURES = ['Combined QC CYP2C9_*1/*1', 'Combined QC CYP2C9_*1/*2',
        'Combined QC CYP2C9_*1/*3', 'Combined QC CYP2C9_*2/*2',
        'Combined QC CYP2C9_*2/*3', 'Combined QC CYP2C9_*3/*3',
        'CYP2C9 consensus_*1/*1', 'CYP2C9 consensus_*1/*11',
@@ -15,21 +15,38 @@ CYP_FEATURES = ['Combined QC CYP2C9_*1/*1', 'Combined QC CYP2C9_*1/*2',
        'CYP2C9 consensus_*2/*2', 'CYP2C9 consensus_*2/*3',
        'CYP2C9 consensus_*3/*3']
 
-UCB_FEATURES = ['Age', 'Weight (kg)', 'Height (cm)',
-                'VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C',
-                'CYP2C9 consensus_*1/*2',
-                'VKORC1 -1639 consensus_G/G',
-                'VKORC1 1542 consensus_G/G',
-                'taking_amiodarone',
-                'enzyme_score_2',
-                'VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G',
-                'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G',
-                'Race_White',
-                'Race_Black or African American',
-                'Race_Asian',
-                'Valve Replacement',
-                'Current Smoker', 'VKORC1 1173 consensus_C/C', 'Ethnicity_not Hispanic or Latino',
-                'Diabetes', 'Congestive Heart Failure and/or Cardiomyopathy', 'bias']
+UCB_FEATURES = [
+    'Age', 'Weight (kg)', 'Height (cm)',
+    'taking_amiodarone',
+    'enzyme_score_2',
+    'Race_White',
+    'Race_Black or African American',
+    'Race_Asian',
+    'Race_Unknown',
+    'Valve Replacement',
+    'Current Smoker',
+    'Ethnicity_not Hispanic or Latino',
+    'Diabetes', 'Congestive Heart Failure and/or Cardiomyopathy', 'bias',
+
+    # proxies for unknown CYP/VKOR
+    'cyp_sum', 'vko_sum',
+
+    'CYP2C9 consensus_*1/*2',
+    'CYP2C9 consensus_*1/*3',
+    'CYP2C9 consensus_*2/*2',
+    'CYP2C9 consensus_*2/*3',
+    'CYP2C9 consensus_*3/*3',
+
+
+    'VKORC1 -1639 consensus_G/G',
+    'VKORC1 1542 consensus_G/G',
+    'VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C',
+    'VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G',
+    'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G',
+    'VKORC1 1173 consensus_C/C',
+
+]
+assert len(UCB_FEATURES) == len(set(UCB_FEATURES)), 'Please remove duplicate feature.'
 
 
 class LinUCB:

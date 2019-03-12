@@ -23,9 +23,12 @@ def get_features():
     data['enzyme_score_2'] = data[ENZYME_COLS].fillna(0).sum(1).clip(0, None).values
     data['Age'] = data['Age'].str.partition('-')[0].str.strip('+').astype(int)
     data['Comorbidities'] = data['Comorbidities'].str.lower().str.strip()
+    data['vko_sum'] = data.loc[:, data.columns.str.startswith('VKO')].sum(1)
+    data['cyp_sum'] = data.loc[:, data.columns.str.startswith('CYP')].count(1)
     for drug in COMMON_DRUGS:
         data[f'taking_{drug}'] = data['Medications'].str.contains(f'; {drug}').fillna(False)
     feature_df = pd.get_dummies(data, columns=DUMMY_COLS)
     target = feature_df['warfarin']
     num_cols = get_num_cols(feature_df).drop('warfarin')
+    #import ipdb; ipdb.set_trace()
     return feature_df[num_cols].fillna(-1), target
