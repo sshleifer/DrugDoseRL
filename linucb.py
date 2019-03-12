@@ -80,6 +80,7 @@ def main():
     print("Overall accuracy: %s" % (1 - total_regret / X.shape[0]))
     results.write("Regret: %s, Accuracy: %s\n" % (total_regret, 1 - total_regret / X.shape[0]))
 
+
 if __name__ == "__main__":
     main()
 
