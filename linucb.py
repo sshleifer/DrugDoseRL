@@ -81,7 +81,7 @@ class LinUCB:
         self.b_lst[chosen_arm] = self.b_lst[chosen_arm] + features * reward
 
 
-def main():
+def run_ucb():
     logging = True
     if logging:
         log = open("log.txt", "w+")
@@ -108,11 +108,15 @@ def main():
             log.write("Updated parameters for arm:\n A = %s \n b = %s\n" % (linucb.A_lst[arm], linucb.b_lst[arm]))
 
     results = open("linucb_results.txt", "a+")
+
+    acc = (1 - total_regret / X.shape[0])
+
     print("Total regret: %s" % total_regret)
-    print("Overall accuracy: %s" % (1 - total_regret / X.shape[0]))
+    print("Overall accuracy: %s" % acc)
     results.write("Regret: %s, Accuracy: %s\n" % (total_regret, 1 - total_regret / X.shape[0]))
+    return acc, total_regret
 
 
 if __name__ == "__main__":
-    main()
+    run_ucb()
 

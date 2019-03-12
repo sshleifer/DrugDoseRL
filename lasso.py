@@ -3,7 +3,7 @@ import math
 from tqdm import tqdm
 from get_features import get_features
 from sklearn import linear_model as lm
-from utils import dose2str, get_sample_order
+from utils import dose2str, get_sample_order, run_iters
 from linucb import UCB_FEATURES
 
 class Lasso:
@@ -95,7 +95,7 @@ class Lasso:
 
 
 
-def main():
+def run_lasso():
     logging = True
     if logging:
         log = open("log_lasso.txt", "w+")
@@ -119,10 +119,14 @@ def main():
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
 
     results = open("lasso_results.txt", "a+")
+    acc = (1 - total_regret / X.shape[0])
+
     print("Total regret: %s" % total_regret)
-    print("Overall accuracy: %s" % (1 - total_regret / X.shape[0]))
+    print("Overall accuracy: %s" % acc)
     results.write("Regret: %s, Accuracy: %s\n" % (total_regret, 1 - total_regret / X.shape[0]))
+    return acc, total_regret
 
 if __name__ == "__main__":
-    main()
+    # run_iters(10, main)
+    run_lasso()
 
