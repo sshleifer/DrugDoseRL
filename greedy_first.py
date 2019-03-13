@@ -8,15 +8,14 @@ from linucb import UCB_FEATURES
 
 arms = ["low", "medium", "high"]
 
-class Lasso:
+class GreedyFirst:
     def __init__(self, num_features, num_samples):
         self.order = get_sample_order(num_samples)
         self.q = 2
         self.h = 5
-        self.lambda_1 = 0.05
-        self.lambda_2_0 = 0.05
-        self.lambda_2_t = 0.05
         self.num_features = num_features
+        self.t_0 = 8 * 3 * num_features
+        self.lambda_0 = 0
 
         self.iter = 0
         self.n = 0
@@ -33,6 +32,8 @@ class Lasso:
         self.X = np.array([]).reshape(0, num_features)
         self.y = np.array([]).reshape(0, 1)
 
+        self.ols = False
+
     def select_arm(self, features):
         """A method that returns the index of the Arm that the Bandit object
         selects on the current play.
@@ -41,35 +42,42 @@ class Lasso:
         """
         # participating in force-sampling
         self.iter += 1
+        arm = -1
         force_base = (2**self.n - 1) * 3 * self.q
         diff = self.iter - force_base
         if diff in self.j_low:
-            self.T_sets[0].append(self.iter)
-            return 0, [1, 0, 0]
+            arm, p_vals = 0, [1, 0, 0]
         elif diff in self.j_med:
-            self.T_sets[1].append(self.iter)
-            return 1, [0, 1, 0]
+            arm, p_vals = 1, [0, 1, 0]
         elif diff in self.j_high:
-            self.T_sets[2].append(self.iter)
             if diff == self.j_high[-1]:
                 self.n += 1
-            return 2, [0, 1, 1]
+            arm, p_vals = 2, [0, 0, 1]
 
-        K_hat = []
-        T_beta_vals = [np.dot(features, self.T_beta[i]) for i in range(3)]
-        max_T_beta = max(T_beta_vals)
+        if self.ols and arm != -1:
+            self.T_sets[arm].append(self.iter)
+            return arm, p_vals
 
-        for i in range(3):
-            if T_beta_vals[i] >= max_T_beta - self.h / 2:
-                K_hat.append(i)
+        if self.ols:
+            K_hat = []
+            T_beta_vals = [np.dot(features, self.T_beta[i]) for i in range(3)]
+            max_T_beta = max(T_beta_vals)
 
-        p_vals = []
-        for i in K_hat:
-            p_vals.append((i, np.dot(features, self.S_beta[i])))
+            for i in range(3):
+                if T_beta_vals[i] >= max_T_beta - self.h / 2:
+                    K_hat.append(i)
 
-        chosen_arm = max(p_vals, key=lambda p: p[1])[0]
-        all_p_vals = p_vals + [(i, 0) for i in range(3) if i not in K_hat]
-        return chosen_arm, [p[1] for p in sorted(all_p_vals)]
+            p_vals = []
+            for i in K_hat:
+                p_vals.append((i, np.dot(features, self.S_beta[i])))
+
+            chosen_arm = max(p_vals, key=lambda p: p[1])[0]
+            all_p_vals = p_vals + [(i, 0) for i in range(3) if i not in K_hat]
+            return chosen_arm, [p[1] for p in sorted(all_p_vals)]
+        else:
+            p_vals = [np.dot(features, self.S_beta[i]) for i in range(3)]
+            return np.argmax(p_vals), p_vals
+
 
     def update(self, chosen_arm, reward, features):
         """A method that updates the internal state of the Bandit object in 
@@ -79,53 +87,67 @@ class Lasso:
         self.y = np.append(self.y, reward)
 
         self.S_sets[chosen_arm].append(self.iter)
-        self.lambda_2_t = self.lambda_2_0 * math.sqrt(
-            (math.log(self.iter) + math.log(self.num_features)) / self.iter)
-
-        for i in range(3):  # forced Sampling
-            T_idx = np.array(self.T_sets[i])
-            T_idx = T_idx[T_idx <= self.iter]
-            if np.size(T_idx) > 0:
-                t_lasso = lm.Lasso(self.lambda_1 / 2, fit_intercept=False)
-                t_lasso.fit(self.X[T_idx - 1, :], self.y[T_idx - 1])
-                self.T_beta[i] = t_lasso.coef_
 
         S_idx = np.array(self.S_sets[chosen_arm])
         if np.size(S_idx) > 0:
-            s_lasso = lm.Lasso(self.lambda_2_t / 2, fit_intercept=False)
-            s_lasso.fit(self.X[S_idx - 1, :], self.y[S_idx - 1])
-            self.S_beta[chosen_arm] = s_lasso.coef_
+            s_linreg = lm.LinearRegression(fit_intercept=False)
+            s_linreg.fit(self.X[S_idx - 1, :], self.y[S_idx - 1])
+            self.S_beta[chosen_arm] = s_linreg.coef_
+
+        if self.ols:
+            for i in range(3):  # forced sampling
+                T_idx = np.array(self.T_sets[i])
+                T_idx = T_idx[T_idx <= self.iter]
+                if np.size(T_idx) > 0:
+                    t_ols = lm.LinearRegression(fit_intercept=False)
+                    t_ols.fit(self.X[T_idx - 1, :], self.y[T_idx - 1])
+                    self.T_beta[i] = t_ols.coef_
+        else:
+            cov_lst = []
+            for i in range(3):
+                X_s = self.X[S_idx - 1, :]
+                cov = np.matmul(X_s.T, X_s)
+                cov_lst.append(cov)
+
+            cov_eigen = [np.min(np.linalg.eigvals(m)) for m in cov_lst]
+
+            if self.t_0 == self.iter:
+                self.lambda_0 = min(cov_eigen) / (2 * self.t_0)
+
+            if self.iter > self.t_0 and min(cov_eigen) < self.lambda_0 * self.iter / 4:
+                self.ols = True
+                self.S_sets = [[], [], []]
 
 
 
-def run_lasso():
+def run_greedy_first():
     logging = True
     # reward_style = "standard"
     # reward_style = "risk-sensitive"
     reward_style = "prob-based"
     if logging:
-        log = open("log_lasso.txt", "w+")
+        log = open("log_greedy_first.txt", "w+")
     X, y = get_features()
     X['bias'] = 1
     feature_select = UCB_FEATURES
     X_subset = X[feature_select]
     num_features = len(feature_select)
-    lasso = Lasso(num_features, X_subset.shape[0])
+    greedy_first = GreedyFirst(num_features, X_subset.shape[0])
     total_regret = 0
     num_correct = 0
     for i in tqdm(range(X_subset.shape[0])):
-        row_num = lasso.order[i]
+        row_num = greedy_first.order[i]
         features = np.array(X_subset.iloc[row_num])
-        arm, p_vals = lasso.select_arm(features)
+        arm, p_vals = greedy_first.select_arm(features)
         regret, reward = calculate_reward(arm, y.iloc[row_num], reward_style, p_vals)
         num_correct += 1 if not regret else 0
         total_regret += regret
-        lasso.update(arm, reward, features)
+        greedy_first.update(arm, reward, features)
         if logging:
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
 
-    results = open("results_lasso_%s.txt" % reward_style, "a+")
+    results = open("results_greedy_first_%s.txt" % reward_style, "a+")
     acc = (num_correct / X.shape[0])
 
     print("Total regret: %s" % total_regret)
@@ -134,6 +156,6 @@ def run_lasso():
     return acc, total_regret
 
 if __name__ == "__main__":
-    run_iters(10, run_lasso)
-    # run_lasso()
+    run_iters(10, run_greedy_first)
+    # run_greedy_first()
 

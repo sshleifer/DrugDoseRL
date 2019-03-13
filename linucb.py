@@ -2,8 +2,9 @@ import numpy as np
 import math
 from tqdm import tqdm
 from get_features import get_features
-from utils import dose2str, get_sample_order
+from utils import dose2str, get_sample_order, run_iters, calculate_reward
 
+arms = ["low", "medium", "high"]
 
 ALL_CYP_FEATURES = ['Combined QC CYP2C9_*1/*1', 'Combined QC CYP2C9_*1/*2',
        'Combined QC CYP2C9_*1/*3', 'Combined QC CYP2C9_*2/*2',
@@ -71,7 +72,7 @@ class LinUCB:
             #import ipdb; ipdb.set_trace()
             p += self.alpha * math.sqrt(np.dot(features, np.dot(np.linalg.inv(self.A_lst[i]), features)))
             p_vals.append(p)
-        return np.argmax(p_vals)
+        return np.argmax(p_vals), p_vals
 
     def update(self, chosen_arm, reward, features):
         """A method that updates the internal state of the Bandit object in 
@@ -81,11 +82,13 @@ class LinUCB:
         self.b_lst[chosen_arm] = self.b_lst[chosen_arm] + features * reward
 
 
-def run_ucb():
+def run_linucb():
     logging = True
+    # reward_style = "standard"
+    # reward_style = "risk-sensitive"
+    reward_style = "prob-based"
     if logging:
-        log = open("log.txt", "w+")
-    arms = ["low", "medium", "high"]
+        log = open("log_linucb.txt", "w+")
     X, y = get_features()
     X['bias'] = 1
     feature_select = UCB_FEATURES
@@ -95,28 +98,30 @@ def run_ucb():
     num_features = len(feature_select)
     linucb = LinUCB(num_features, X_subset.shape[0])
     total_regret = 0
+    num_correct = 0
     for i in tqdm(range(X_subset.shape[0])):
         row_num = linucb.order[i]
         features = np.array(X_subset.iloc[row_num])
-        arm = linucb.select_arm(features)
-        reward = 0 if arms[arm] == dose2str(y.iloc[row_num]) else -1
-        total_regret += 0 - reward
+        arm, p_vals = linucb.select_arm(features)
+        regret, reward = calculate_reward(arm, y.iloc[row_num], reward_style, p_vals)
+        num_correct += 1 if not regret else 0
+        total_regret += regret
         linucb.update(arm, reward, features)
         if logging:
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
             log.write("Updated parameters for arm:\n A = %s \n b = %s\n" % (linucb.A_lst[arm], linucb.b_lst[arm]))
 
-    results = open("linucb_results.txt", "a+")
-
-    acc = (1 - total_regret / X.shape[0])
+    results = open("results_linucb_%s.txt" % reward_style, "a+")
+    acc = (num_correct / X.shape[0])
 
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % acc)
-    results.write("Regret: %s, Accuracy: %s\n" % (total_regret, 1 - total_regret / X.shape[0]))
+    results.write("Regret: %s, Accuracy: %s\n" % (total_regret, num_correct / X.shape[0]))
     return acc, total_regret
 
 
 if __name__ == "__main__":
-    run_ucb()
+    run_iters(10, run_linucb)
+    # run_linucb()
 
