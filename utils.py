@@ -20,7 +20,8 @@ def dose2int(dose):
         return 2
     else:
         return 1
-def arm2dose(arm_ind): #TODO: tune this to make sense.
+
+def arm2dose(arm_ind):
     if arm_ind == 0:
         return 21
     elif arm_ind == 2:
@@ -31,9 +32,9 @@ def arm2dose(arm_ind): #TODO: tune this to make sense.
 def is_correct(arm_ind, actual_dose):
     return dose2int(actual_dose) == arm_ind
 
-def is_fuzz_correct(arm_ind, actual_dose, eps = 7):
-    boundaries = [[0,21], [21, 49], [49, 1000]]
-    (lower,upper) = boundaries[arm_ind]
+def is_fuzz_correct(arm_ind, actual_dose, eps=7):
+    boundaries = [[0,21], [21, 49], [49, 315]]
+    lower, upper = boundaries[arm_ind]
 
     return lower - eps <= actual_dose <= upper + eps
 
@@ -54,7 +55,6 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         reward = 0 if arms[arm_ind] == dose2str(y) else -1
         regret = -reward
     elif style == "risk-sensitive":
-        #TODO tune this
         if abs(dose2int(y) - arm_ind) == 2:
             reward = -2
         elif abs(dose2int(y) - arm_ind) == 1:
@@ -71,7 +71,6 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         regret = -reward
     elif style == "proportional":
         #reward is distance between dose and arm pulled (arm pulled dose chosen wrt arm2dose)
-        #TODO tune this 
         reward = -abs(y - arm2dose(arm_ind))/7
         regret = -reward
 

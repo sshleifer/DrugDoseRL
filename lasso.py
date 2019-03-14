@@ -3,7 +3,7 @@ import math
 from tqdm import tqdm
 from get_features import get_features
 from sklearn import linear_model as lm
-from utils import dose2str, get_sample_order, run_iters, calculate_reward
+from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct
 from linucb import UCB_FEATURES
 
 arms = ["low", "medium", "high"]
@@ -103,34 +103,49 @@ def run_lasso():
     # reward_style = "standard"
     # reward_style = "risk-sensitive"
     reward_style = "prob-based"
+    # reward_style = "proportional"
+    eps = 7
     if logging:
         log = open("log_lasso.txt", "w+")
+    
     X, y = get_features()
     X['bias'] = 1
     feature_select = UCB_FEATURES
     X_subset = X[feature_select]
     num_features = len(feature_select)
     lasso = Lasso(num_features, X_subset.shape[0])
+    
     total_regret = 0
     num_correct = 0
+    num_fuzz_correct = 0
+    hist = []
+
     for i in tqdm(range(X_subset.shape[0])):
         row_num = lasso.order[i]
         features = np.array(X_subset.iloc[row_num])
         arm, p_vals = lasso.select_arm(features)
-        regret, reward = calculate_reward(arm, y.iloc[row_num], reward_style, p_vals)
-        num_correct += 1 if not regret else 0
+        dose = y.iloc[row_num]
+        regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
+        
+        num_correct += 1 if is_correct(arm, dose) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps) else 0
         total_regret += regret
+
         lasso.update(arm, reward, features)
         if logging:
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
+            log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
 
     results = open("results_lasso_%s.txt" % reward_style, "a+")
     acc = (num_correct / X.shape[0])
+    fuzz_acc = num_fuzz_correct / X.shape[0]
 
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % acc)
-    results.write("Regret: %s, Accuracy: %s\n" % (total_regret, num_correct / X.shape[0]))
+    print("Overall fuzzy accuracy: %s" % fuzz_acc)
+    results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
+
     return acc, total_regret
 
 if __name__ == "__main__":

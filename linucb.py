@@ -3,7 +3,7 @@ import math
 from tqdm import tqdm
 from get_features import get_features
 from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 arms = ["low", "medium", "high"]
 
@@ -89,25 +89,22 @@ def run_linucb():
     # reward_style = "risk-sensitive"
     # reward_style = "prob-based"
     # reward_style = "proportional"
-
     eps = 7
-
-
     if logging:
         log = open("log_linucb.txt", "w+")
+
     X, y = get_features()
     X['bias'] = 1
     feature_select = UCB_FEATURES
-
-    # Use all features from paper
     X_subset = X[feature_select].astype(float)
     num_features = len(feature_select)
     linucb = LinUCB(num_features, X_subset.shape[0])
+
     total_regret = 0
     num_correct = 0
     num_fuzz_correct = 0
-
     hist = []
+
     for i in tqdm(range(X_subset.shape[0])):
         row_num = linucb.order[i]
         features = np.array(X_subset.iloc[row_num])
@@ -125,16 +122,15 @@ def run_linucb():
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
             log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
-            log.write("Updated parameters for arm:\n A = %s \n b = %s\n" % (linucb.A_lst[arm], linucb.b_lst[arm]))
 
     results = open("results_linucb_%s.txt" % reward_style, "a+")
-    acc = (num_correct / X.shape[0])
+    acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % acc)
-    print("Overall almost correct accuracy: %s" % fuzz_acc)
-    results.write("Regret: %s, Accuracy: %s, Almost Correct Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
+    print("Overall fuzzy accuracy: %s" % fuzz_acc)
+    results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
  
     return acc, total_regret
 

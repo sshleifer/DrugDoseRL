@@ -3,7 +3,7 @@ import pandas as pd
 import math
 from tqdm import tqdm
 from get_features import get_features
-from utils import dose2str, get_sample_order, run_iters, calculate_reward
+from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct
 from linucb import UCB_FEATURES
 
 arms = ["low", "medium", "high"]
@@ -66,9 +66,11 @@ def run_hybrid_linucb():
     # reward_style = "standard"
     # reward_style = "risk-sensitive"
     reward_style = "prob-based"
+    # reward_style = "proportional"
+    eps = 7
     if logging:
         log = open("log_hybrid_linucb.txt", "w+")
-    arms = ["low", "medium", "high"]
+
     X, y = get_features()
     X['bias'] = 1
     z_feature_select = UCB_FEATURES
@@ -78,27 +80,40 @@ def run_hybrid_linucb():
     z_num_features = len(z_feature_select)
     x_num_features = len(x_feature_select)
     hybrid_linucb = HybridLinUCB(z_num_features, x_num_features, X_z_subset.shape[0])
+
     total_regret = 0
     num_correct = 0
+    num_fuzz_correct = 0
+    hist = []
+
     for i in tqdm(range(X_z_subset.shape[0])):
         row_num = hybrid_linucb.order[i]
         z_features = np.array(X_z_subset.iloc[row_num])
         x_features = np.array(X_x_subset.iloc[row_num])
         arm, p_vals = hybrid_linucb.select_arm(z_features, x_features)
-        regret, reward = calculate_reward(arm, y.iloc[row_num], reward_style, p_vals)
-        num_correct += 1 if not regret else 0
+        dose = y.iloc[row_num]
+        regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
+        
+        num_correct += 1 if is_correct(arm, dose) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps) else 0
         total_regret += regret
+        
         hybrid_linucb.update(arm, reward, z_features, x_features)
+        hist.append(arm)
         if logging:
             log.write("Sample %s: Using z features %s\n, x features %s\n" % (row_num, z_features, x_features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
+            log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
 
     results = open("results_hybrid_linucb_%s.txt" % reward_style, "a+")
-    acc = (num_correct / X.shape[0])
+    acc = num_correct / X.shape[0]
+    fuzz_acc = num_fuzz_correct / X.shape[0]
 
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % acc)
-    results.write("Regret: %s, Accuracy: %s\n" % (total_regret, num_correct / X.shape[0]))
+    print("Overall fuzzy accuracy: %s" % fuzz_acc)
+    results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
+
     return acc, total_regret
 
 if __name__ == "__main__":
