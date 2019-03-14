@@ -126,6 +126,7 @@ def run_greedy_first():
     # reward_style = "risk-sensitive"
     reward_style = "prob-based"
     # reward_style = "proportional"
+    # reward_style = "fuzzy"
     eps = 7
     if logging:
         log = open("log_greedy_first.txt", "w+")
@@ -168,7 +169,7 @@ def run_greedy_first():
     print("Overall accuracy: %s" % acc)
     print("Overall fuzzy accuracy: %s" % fuzz_acc)
     results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
-    
+
     return acc, total_regret
 
 if __name__ == "__main__":

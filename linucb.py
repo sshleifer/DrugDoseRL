@@ -89,6 +89,7 @@ def run_linucb():
     # reward_style = "risk-sensitive"
     # reward_style = "prob-based"
     # reward_style = "proportional"
+    # reward_style = "fuzzy"
     eps = 7
     if logging:
         log = open("log_linucb.txt", "w+")
@@ -113,7 +114,7 @@ def run_linucb():
         regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
         
         num_correct += 1 if is_correct(arm, dose) else 0
-        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=7) else 0
         total_regret += regret
 
         linucb.update(arm, reward, features)
@@ -136,6 +137,6 @@ def run_linucb():
 
 
 if __name__ == "__main__":
-    run_iters(3, run_linucb)
+    run_iters(10, run_linucb)
     # run_linucb()
 

@@ -67,6 +67,7 @@ def run_hybrid_linucb():
     # reward_style = "risk-sensitive"
     reward_style = "prob-based"
     # reward_style = "proportional"
+    # reward_style = "fuzzy"
     eps = 7
     if logging:
         log = open("log_hybrid_linucb.txt", "w+")
