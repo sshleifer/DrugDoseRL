@@ -4,6 +4,7 @@ from tqdm import tqdm
 import pandas as pd
 
 arms = ["low", "medium", "high"]
+boundaries = [[0,21], [21, 49], [49, 1000]]
 
 def dose2str(dose):
     if dose < 21:
@@ -32,9 +33,7 @@ def is_correct(arm_ind, actual_dose):
     return dose2int(actual_dose) == arm_ind
 
 def is_fuzz_correct(arm_ind, actual_dose, eps = 7):
-    boundaries = [[0,21], [21, 49], [49, 1000]]
     (lower,upper) = boundaries[arm_ind]
-
     return lower - eps <= actual_dose <= upper + eps
 
 def get_sample_order(n):
@@ -73,6 +72,9 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         #reward is distance between dose and arm pulled (arm pulled dose chosen wrt arm2dose)
         #TODO tune this 
         reward = -abs(y - arm2dose(arm_ind))/7
+        regret = -reward
+    elif style == "fuzzy":
+        reward = -1 if not is_fuzz_correct(arm_ind, y) else 0
         regret = -reward
 
     return regret, reward
