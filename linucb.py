@@ -2,7 +2,8 @@ import numpy as np
 import math
 from tqdm import tqdm
 from get_features import get_features
-from utils import dose2str, get_sample_order, run_iters, calculate_reward
+from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct
+#import matplotlib.pyplot as plt
 
 arms = ["low", "medium", "high"]
 
@@ -84,9 +85,14 @@ class LinUCB:
 
 def run_linucb():
     logging = True
-    # reward_style = "standard"
+    reward_style = "standard"
     # reward_style = "risk-sensitive"
-    reward_style = "prob-based"
+    # reward_style = "prob-based"
+    # reward_style = "proportional"
+
+    eps = 7
+
+
     if logging:
         log = open("log_linucb.txt", "w+")
     X, y = get_features()
@@ -99,29 +105,41 @@ def run_linucb():
     linucb = LinUCB(num_features, X_subset.shape[0])
     total_regret = 0
     num_correct = 0
+    num_fuzz_correct = 0
+
+    hist = []
     for i in tqdm(range(X_subset.shape[0])):
         row_num = linucb.order[i]
         features = np.array(X_subset.iloc[row_num])
         arm, p_vals = linucb.select_arm(features)
-        regret, reward = calculate_reward(arm, y.iloc[row_num], reward_style, p_vals)
-        num_correct += 1 if not regret else 0
+        dose = y.iloc[row_num]
+        regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
+        
+        num_correct += 1 if is_correct(arm, dose) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps) else 0
         total_regret += regret
+
         linucb.update(arm, reward, features)
+        hist.append(arm) #useful for plotting results
         if logging:
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
+            log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
             log.write("Updated parameters for arm:\n A = %s \n b = %s\n" % (linucb.A_lst[arm], linucb.b_lst[arm]))
 
     results = open("results_linucb_%s.txt" % reward_style, "a+")
     acc = (num_correct / X.shape[0])
+    fuzz_acc = num_fuzz_correct / X.shape[0]
 
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % acc)
-    results.write("Regret: %s, Accuracy: %s\n" % (total_regret, num_correct / X.shape[0]))
+    print("Overall almost correct accuracy: %s" % fuzz_acc)
+    results.write("Regret: %s, Accuracy: %s, Almost Correct Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
+ 
     return acc, total_regret
 
 
 if __name__ == "__main__":
-    run_iters(10, run_linucb)
+    run_iters(3, run_linucb)
     # run_linucb()
 
