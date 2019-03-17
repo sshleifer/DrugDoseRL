@@ -2,6 +2,7 @@ import random
 import math
 from tqdm import tqdm
 import pandas as pd
+import matplotlib.pyplot as plt
 
 arms = ["low", "medium", "high"]
 boundaries = [[0,21], [21, 49], [49, 315]]
@@ -85,3 +86,33 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         regret = -reward
 
     return regret, reward
+
+def show_hist(hist):
+    num_lows = 0
+    num_meds = 0
+    num_highs = 0
+
+    index = 0
+
+    low_freqs = []
+    med_freqs = []
+    high_freqs = []
+    for h in hist:
+        if h == 0:
+            num_lows+=1
+        elif h == 1:
+            num_meds += 1
+        else:
+            num_highs +=1
+        index+=1
+
+        low_freqs.append(num_lows/index)
+        med_freqs.append(num_meds/index)
+        high_freqs.append(num_highs/index)
+
+    plt.plot(low_freqs, label = 'low frequency')
+    plt.plot(med_freqs, label = 'med frequency')
+    plt.plot(high_freqs, label = 'high frequency')
+    plt.legend()
+    plt.show()
+

@@ -2,8 +2,7 @@ import numpy as np
 import math
 from tqdm import tqdm
 from get_features import get_features
-from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct
-import matplotlib.pyplot as plt
+from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct, show_hist
 
 arms = ["low", "medium", "high"]
 
@@ -85,11 +84,12 @@ class LinUCB:
 
 def run_linucb():
     logging = True
-    # reward_style = "standard"
+    show_history = False
+    reward_style = "standard"
     # reward_style = "risk-sensitive"
     # reward_style = "prob-based"
     # reward_style = "proportional"
-    reward_style = "fuzzy"
+    # reward_style = "fuzzy"
     eps = 7
     if logging:
         log = open("log_linucb.txt", "w+")
@@ -123,7 +123,8 @@ def run_linucb():
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
             log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
-
+    if show_history:
+        show_hist(hist)
     results = open("results_linucb_%s.txt" % reward_style, "a+")
     acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
