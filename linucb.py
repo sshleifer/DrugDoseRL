@@ -85,11 +85,11 @@ class LinUCB:
 
 def run_linucb():
     logging = True
-    reward_style = "standard"
+    # reward_style = "standard"
     # reward_style = "risk-sensitive"
     # reward_style = "prob-based"
     # reward_style = "proportional"
-    # reward_style = "fuzzy"
+    reward_style = "fuzzy"
     eps = 7
     if logging:
         log = open("log_linucb.txt", "w+")
@@ -114,7 +114,7 @@ def run_linucb():
         regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
         
         num_correct += 1 if is_correct(arm, dose) else 0
-        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=7) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=14) else 0
         total_regret += regret
 
         linucb.update(arm, reward, features)
@@ -132,11 +132,11 @@ def run_linucb():
     print("Overall accuracy: %s" % acc)
     print("Overall fuzzy accuracy: %s" % fuzz_acc)
     results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
- 
+
     return acc, total_regret
 
 
 if __name__ == "__main__":
-    run_iters(10, run_linucb)
+    run_iters(20, run_linucb)
     # run_linucb()
 

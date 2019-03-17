@@ -54,12 +54,20 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         reward = 0 if arms[arm_ind] == dose2str(y) else -1
         regret = -reward
     elif style == "risk-sensitive":
-        if abs(dose2int(y) - arm_ind) == 2:
-            reward = -2
-        elif abs(dose2int(y) - arm_ind) == 1:
-            reward = -1
-        else:
+        if is_correct(arm_ind, y):
             reward = 0
+
+        elif not is_fuzz_correct(arm_ind, y):
+            reward = -1
+
+        else:
+            reward = -2
+        # if abs(dose2int(y) - arm_ind) == 2:
+        #     reward = -2
+        # elif abs(dose2int(y) - arm_ind) == 1:
+        #     reward = -1
+        # else:
+        #     reward = 0
         regret = -reward
     elif style == "prob-based":
         correct_arm = dose2int(y)
