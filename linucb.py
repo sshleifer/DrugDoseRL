@@ -2,8 +2,7 @@ import numpy as np
 import math
 from tqdm import tqdm
 from get_features import get_features
-from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct
-# import matplotlib.pyplot as plt
+from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct, show_hist
 
 arms = ["low", "medium", "high"]
 
@@ -84,6 +83,14 @@ class LinUCB:
 
 
 def run_linucb(reward_style, eps, logging=True):
+    logging = True
+    show_history = False
+    reward_style = "standard"
+    # reward_style = "risk-sensitive"
+    # reward_style = "prob-based"
+    # reward_style = "proportional"
+    # reward_style = "fuzzy"
+    eps = 7
     if logging:
         log = open("log_linucb.txt", "w+")
 
@@ -111,7 +118,7 @@ def run_linucb(reward_style, eps, logging=True):
         regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
         
         num_correct += 1 if is_correct(arm, dose) else 0
-        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=7) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=14) else 0
         total_regret += regret
 
         linucb.update(arm, reward, features)
@@ -122,6 +129,9 @@ def run_linucb(reward_style, eps, logging=True):
             log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
 
     results = open("results/results_linucb_%s.txt" % reward_style, "a+")
+    if show_history:
+        show_hist(hist)
+
     acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
@@ -129,7 +139,7 @@ def run_linucb(reward_style, eps, logging=True):
     print("Overall accuracy: %s" % acc)
     print("Overall fuzzy accuracy: %s" % fuzz_acc)
     results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
- 
+
     return acc, total_regret
 
 
