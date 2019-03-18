@@ -125,5 +125,5 @@ if __name__ == "__main__":
             print("Running reward style %s" % r)
             run_iters(num_iters, run_hybrid_linucb, r, eps, logging)
     else:
-        run_iters(num_iters, run_hybrid_linucb, reward_styles[0], eps, logging)
+        run_iters(num_iters, run_hybrid_linucb, reward_styles[4], eps, logging)
     # run_hybrid_linucb()
