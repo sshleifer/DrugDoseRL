@@ -82,7 +82,7 @@ class LinUCB:
         self.b_lst[chosen_arm] = self.b_lst[chosen_arm] + features * reward
 
 
-def run_linucb():
+def run_linucb(reward_style, eps, logging=True):
     logging = True
     show_history = False
     # reward_style = "standard"
@@ -106,6 +106,10 @@ def run_linucb():
     hist = []
 
     for i in tqdm(range(X_subset.shape[0])):
+        if i > 0 and i % 100 == 0:
+            step_results = open("results/results_linucb_%s_step_%s.txt" % (reward_style, i), "a+")
+            step_results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, num_correct / i, num_fuzz_correct / i))
+            step_results.close()
         row_num = linucb.order[i]
         features = np.array(X_subset.iloc[row_num])
         arm, p_vals = linucb.select_arm(features)
@@ -122,9 +126,11 @@ def run_linucb():
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
             log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
+
+    results = open("results/results_linucb_%s.txt" % reward_style, "a+")
     if show_history:
         show_hist(hist)
-    results = open("results_linucb_%s.txt" % reward_style, "a+")
+
     acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
@@ -137,6 +143,16 @@ def run_linucb():
 
 
 if __name__ == "__main__":
-    run_iters(100, run_linucb)
+    logging = True
+    reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy"]
+    run_all = True
+    eps = 7
+    num_iters = 50
+    if run_all:
+        for r in reward_styles:
+            print("Running reward style %s" % r)
+            run_iters(num_iters, run_linucb, r, eps, logging)
+    else:
+        run_iters(num_iters, run_linucb, reward_styles[0], eps, logging)
     # run_linucb()
 

@@ -85,9 +85,9 @@ def calculate_reward(arm_ind, y, new_reward):
     if is_correct(arm_ind, y):
         reward = 0
     elif not is_fuzz_correct(arm_ind, y):
-        reward = new_reward
+        reward = -1.0125
     else:
-        reward = -1
+        reward = new_reward
     regret = -reward
     return regret, reward
 
@@ -131,7 +131,7 @@ def run_linucb(new_reward):
 
 
 if __name__ == "__main__":
-    new_reward = -.9
+    new_reward = -1.0125
     step_size = 0.05
     num_iters = 10
     prev_acc = 0

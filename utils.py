@@ -43,10 +43,10 @@ def get_sample_order(n):
     random.shuffle(lst)
     return lst
 
-def run_iters(n, func):
+def run_iters(n, func, *args):
     res = []
     for _ in tqdm(range(n)):
-        res.append(func())
+        res.append(func(*args))
     res_df = pd.DataFrame(res)
     return res_df
 
