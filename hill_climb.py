@@ -84,10 +84,10 @@ class LinUCB:
 def calculate_reward(arm_ind, y, new_reward):
     if is_correct(arm_ind, y):
         reward = 0
-    elif not is_fuzz_correct(arm_ind, y):
-        reward = -1.0125
-    else:
+    elif is_fuzz_correct(arm_ind, y):
         reward = new_reward
+    else:
+        reward = -1
     regret = -reward
     return regret, reward
 
@@ -131,11 +131,11 @@ def run_linucb(new_reward):
 
 
 if __name__ == "__main__":
-    new_reward = -1.0125
-    step_size = 0.05
+    new_reward = 0
+    step_size = 0.1
     num_iters = 10
     prev_acc = 0
-    multiplier = -1 #marks if we're adding or subtracting from new_reward
+    multiplier = -0.5 #marks if we're adding or subtracting from new_reward
 
     for i in range(num_iters):
     	print("Trying with intermediate reward of: " + str(new_reward))

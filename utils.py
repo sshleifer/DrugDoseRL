@@ -58,7 +58,7 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         if is_correct(arm_ind, y):
             reward = 0
 
-        elif not is_fuzz_correct(arm_ind, y):
+        elif is_fuzz_correct(arm_ind, y):
             reward = -.99
 
         else:
