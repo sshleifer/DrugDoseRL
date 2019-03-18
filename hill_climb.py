@@ -85,9 +85,9 @@ def calculate_reward(arm_ind, y, new_reward):
     if is_correct(arm_ind, y):
         reward = 0
     elif is_fuzz_correct(arm_ind, y):
-        reward = new_reward
+        reward = - 0.275
     else:
-        reward = -1
+        reward = new_reward
     regret = -reward
     return regret, reward
 
@@ -130,23 +130,44 @@ def run_linucb(new_reward):
     return fuzz_acc
 
 
-if __name__ == "__main__":
-    new_reward = 0
-    step_size = 0.1
-    num_iters = 10
-    prev_acc = 0
-    multiplier = -0.5 #marks if we're adding or subtracting from new_reward
+'''
+linucb with stand reward struct gives fuzzacc = 0.7880451812716344
+linucb with fuzzy reward struct gives fuzzacc = 0.7930205866278012
 
-    for i in range(num_iters):
+Things I've tried: (tuning is_fuzz_acc reward)
+Started with -0.5, descending, gave value of -0.725 with fuzzacc =  0.791956640553835
+Started with -0.725, descending, gave value of -0.78125 with fuzzacc =  0.7903261067589726
+
+Started with -0.5, ascending, gave value of -0.38125 with fuzzacc = 0.7935143013299325
+Started with -0.3, descending, gave value of -0.196875 with fuzzacc = 0.7943159045363455
+
+Started with -0.2, descending, gave value of -0.265625 with fuzzacc =  0.794279468026963
+
+
+(tuning is incorrect reward (is fuzz rew = -.275)):
+Started with -0.275, descending, gave value of -0.65 with fuzzacc = 0.7922663508835852
+Started with -1, descending, gave value of 
+Things to do:
+'''
+if __name__ == "__main__":
+    new_reward = -1.1
+    step_size = 0.1
+    num_iters = 20
+    prev_acc = 0
+    multiplier = -1 #marks if we're adding or subtracting from new_reward
+
+    while step_size > 0.005:
     	print("Trying with intermediate reward of: " + str(new_reward))
     	cur_accs = []
-    	for j in range(20):
+    	for j in range(50):
     		cur_accs.append(run_linucb(new_reward))
     	cur_acc = np.mean(cur_accs)
     	print("Fuzzy accuracy was: " + str(cur_acc))
     	if cur_acc < prev_acc:
     		multiplier = -multiplier
-    		step_size = step_size/2
+    		step_size = step_size/1.5
+    	else:
+    		step_size = step_size * 1.5
     	new_reward += multiplier * step_size
     	prev_acc = cur_acc
 
