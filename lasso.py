@@ -98,14 +98,7 @@ class Lasso:
 
 
 
-def run_lasso():
-    logging = True
-    # reward_style = "standard"
-    # reward_style = "risk-sensitive"
-    reward_style = "prob-based"
-    # reward_style = "proportional"
-    # reward_style = "fuzzy"
-    eps = 7
+def run_lasso(reward_style, eps, logging=True):
     if logging:
         log = open("log_lasso.txt", "w+")
     
@@ -122,6 +115,10 @@ def run_lasso():
     hist = []
 
     for i in tqdm(range(X_subset.shape[0])):
+        # if i > 0 and i % 100 == 0:
+        #     step_results = open("results/results_lasso_%s_step_%s.txt" % (reward_style, i), "a+")
+        #     step_results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, num_correct / i, num_fuzz_correct / i))
+        #     step_results.close()
         row_num = lasso.order[i]
         features = np.array(X_subset.iloc[row_num])
         arm, p_vals = lasso.select_arm(features)
@@ -138,7 +135,8 @@ def run_lasso():
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
             log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
 
-    results = open("results_lasso_%s.txt" % reward_style, "a+")
+    # results = open("results/results_lasso_%s.txt" % reward_style, "a+")
+    results = open("test_lasso_%s.txt" % reward_style, "a+")
     acc = (num_correct / X.shape[0])
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
@@ -150,6 +148,16 @@ def run_lasso():
     return acc, total_regret
 
 if __name__ == "__main__":
-    run_iters(10, run_lasso)
+    logging = True
+    reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy"]
+    run_all = True
+    eps = 7
+    num_iters = 50
+    if run_all:
+        for r in reward_styles:
+            print("Running reward style %s" % r)
+            run_iters(num_iters, run_lasso, r, eps, logging)
+    else:
+        run_iters(num_iters, run_lasso, reward_styles[0], eps, logging)
     # run_lasso()
 
