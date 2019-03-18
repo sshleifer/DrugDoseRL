@@ -2,7 +2,7 @@ import numpy as np
 import math
 from tqdm import tqdm
 from get_features import get_features
-from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct, show_hist
+from utils import dose2str, get_sample_order, run_iters, is_correct, is_fuzz_correct, show_hist
 
 arms = ["low", "medium", "high"]
 
@@ -81,17 +81,21 @@ class LinUCB:
         self.A_lst[chosen_arm] = self.A_lst[chosen_arm] + np.outer(features, features)
         self.b_lst[chosen_arm] = self.b_lst[chosen_arm] + features * reward
 
+def calculate_reward(arm_ind, y, new_reward):
+    if is_correct(arm_ind, y):
+        reward = 0
+    elif not is_fuzz_correct(arm_ind, y):
+        reward = new_reward
+    else:
+        reward = -1
+    regret = -reward
+    return regret, reward
 
-def run_linucb():
-    logging = True
+
+def run_linucb(new_reward):
+    logging = False
     show_history = False
-    # reward_style = "standard"
-    # reward_style = "risk-sensitive"
-    # reward_style = "prob-based"
-    # reward_style = "proportional"
-    reward_style = "fuzzy"
-    if logging:
-        log = open("log_linucb.txt", "w+")
+    reward_style = "standard"
 
     X, y = get_features()
     X['bias'] = 1
@@ -110,7 +114,7 @@ def run_linucb():
         features = np.array(X_subset.iloc[row_num])
         arm, p_vals = linucb.select_arm(features)
         dose = y.iloc[row_num]
-        regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
+        regret, reward = calculate_reward(arm, dose, new_reward)
         
         num_correct += 1 if is_correct(arm, dose) else 0
         num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=3.5) else 0
@@ -118,25 +122,31 @@ def run_linucb():
 
         linucb.update(arm, reward, features)
         hist.append(arm) #useful for plotting results
-        if logging:
-            log.write("Sample %s: Using features %s\n" % (row_num, features))
-            log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
-            log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
     if show_history:
         show_hist(hist)
-    results = open("results_linucb_%s.txt" % reward_style, "a+")
     acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
-    print("Total regret: %s" % total_regret)
-    print("Overall accuracy: %s" % acc)
-    print("Overall fuzzy accuracy: %s" % fuzz_acc)
-    results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
-
-    return acc, total_regret
+    return fuzz_acc
 
 
 if __name__ == "__main__":
-    run_iters(100, run_linucb)
-    # run_linucb()
+    new_reward = -.9
+    step_size = 0.05
+    num_iters = 10
+    prev_acc = 0
+    multiplier = -1 #marks if we're adding or subtracting from new_reward
+
+    for i in range(num_iters):
+    	print("Trying with intermediate reward of: " + str(new_reward))
+    	cur_accs = []
+    	for j in range(20):
+    		cur_accs.append(run_linucb(new_reward))
+    	cur_acc = np.mean(cur_accs)
+    	print("Fuzzy accuracy was: " + str(cur_acc))
+    	if cur_acc < prev_acc:
+    		multiplier = -multiplier
+    		step_size = step_size/2
+    	new_reward += multiplier * step_size
+    	prev_acc = cur_acc
 
