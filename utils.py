@@ -34,7 +34,7 @@ def arm2dose(arm_ind):
 def is_correct(arm_ind, actual_dose):
     return dose2int(actual_dose) == arm_ind
 
-def is_fuzz_correct(arm_ind, actual_dose, eps = 7):
+def is_fuzz_correct(arm_ind, actual_dose, eps = 3.5):
     lower, upper = boundaries[arm_ind]
     return lower - eps <= actual_dose <= upper + eps
 
@@ -58,11 +58,11 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         if is_correct(arm_ind, y):
             reward = 0
 
-        elif not is_fuzz_correct(arm_ind, y):
-            reward = -1
+        elif is_fuzz_correct(arm_ind, y):
+            reward = -.99
 
         else:
-            reward = -2
+            reward = -1
         # if abs(dose2int(y) - arm_ind) == 2:
         #     reward = -2
         # elif abs(dose2int(y) - arm_ind) == 1:
