@@ -89,7 +89,7 @@ def run_linucb(reward_style, eps, logging=True):
     # reward_style = "risk-sensitive"
     # reward_style = "prob-based"
     # reward_style = "proportional"
-    reward_style = "fuzzy"
+    # reward_style = "fuzzy"
     if logging:
         log = open("log_linucb.txt", "w+")
 
@@ -134,17 +134,19 @@ def run_linucb(reward_style, eps, logging=True):
     acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
+    print("logging for: " + reward_style)
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % acc)
     print("Overall fuzzy accuracy: %s" % fuzz_acc)
     results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
+    results.close()
 
     return acc, total_regret
 
 
 if __name__ == "__main__":
     logging = True
-    reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy"]
+    reward_styles = ["standard", "risk-sensitive", "prob-based", "hill-climb-risk-sensitive", "fuzzy"]
     run_all = True
     eps = 7
     num_iters = 50
