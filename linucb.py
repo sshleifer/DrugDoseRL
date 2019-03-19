@@ -127,10 +127,12 @@ def run_linucb(reward_style, eps, logging=True):
     acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
+    print("logging for: " + reward_style)
     print("Total regret: %s" % total_regret)
     print("Overall accuracy: %s" % acc)
     print("Overall fuzzy accuracy: %s" % fuzz_acc)
     results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, acc, fuzz_acc))
+    results.close()
 
     return acc, total_regret
 
