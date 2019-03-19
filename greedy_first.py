@@ -171,7 +171,7 @@ def run_greedy_first(reward_style, eps, logging=True):
 
 if __name__ == "__main__":
     logging = True
-    reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy"]
+    reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy", "hill-climbing"]
     run_all = True
     eps = 7
     num_iters = 50
