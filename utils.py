@@ -69,10 +69,7 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
         else:
             reward = (p_vals[correct_arm] - p_vals[arm_ind]) / (max(p_vals) - min(p_vals))
         regret = -reward
-    elif style == "hill-climb-risk-sensitive":
-        """
-        risk-sensitive using fuzz_correct as metric for determining correctness and tuned using hill-climb
-        """
+    elif style == "hill-climbing":
         if is_correct(arm_ind, y):
             reward = 0
         elif is_fuzz_correct(arm_ind, y):
@@ -84,13 +81,6 @@ def calculate_reward(arm_ind, y, style, p_vals=None):
     elif style == "fuzzy":
         reward = -1 if not is_fuzz_correct(arm_ind, y) else 0
         regret = -reward
-    elif style == "hill-climbing":
-        if is_correct(arm_ind, y):
-            reward = 0
-        elif is_fuzz_correct(arm_ind, y):
-            reward = -0.275
-        else:
-            reward = -1.8
 
     return regret, reward
 

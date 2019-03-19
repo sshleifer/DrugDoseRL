@@ -116,7 +116,7 @@ def run_lasso(reward_style, eps, logging=True):
 
     for i in tqdm(range(X_subset.shape[0])):
         if i > 0 and i % 100 == 0:
-            step_results = open("results/results_lasso_%s_step_%s.txt" % (reward_style, i), "a+")
+            step_results = open("results/lasso/%s/results_lasso_%s_step_%s.txt" % (reward_style, reward_style, i), "a+")
             step_results.write("Regret: %s, Accuracy: %s, Fuzzy Accuracy: %s\n" % (total_regret, num_correct / i, num_fuzz_correct / i))
             step_results.close()
         row_num = lasso.order[i]
@@ -135,7 +135,7 @@ def run_lasso(reward_style, eps, logging=True):
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
             log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
 
-    results = open("results/results_lasso_%s.txt" % reward_style, "a+")
+    results = open("results/lasso/results_lasso_%s.txt" % reward_style, "a+")
     acc = (num_correct / X.shape[0])
     fuzz_acc = num_fuzz_correct / X.shape[0]
 
@@ -149,7 +149,7 @@ def run_lasso(reward_style, eps, logging=True):
 if __name__ == "__main__":
     logging = True
     reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy", "hill-climbing"]
-    run_all = True
+    run_all = False
     eps = 7
     num_iters = 50
     if run_all:
@@ -157,6 +157,6 @@ if __name__ == "__main__":
             print("Running reward style %s" % r)
             run_iters(num_iters, run_lasso, r, eps, logging)
     else:
-        run_iters(num_iters, run_lasso, reward_styles[4], eps, logging)
+        run_iters(num_iters, run_lasso, reward_styles[5], eps, logging)
     # run_lasso()
 
