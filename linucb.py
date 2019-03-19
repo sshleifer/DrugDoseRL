@@ -117,7 +117,7 @@ def run_linucb(reward_style, eps, logging=True):
         regret, reward = calculate_reward(arm, dose, reward_style, p_vals)
         
         num_correct += 1 if is_correct(arm, dose) else 0
-        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=3.5) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=7) else 0
         total_regret += regret
 
         linucb.update(arm, reward, features)
