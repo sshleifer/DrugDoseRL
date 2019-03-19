@@ -85,9 +85,9 @@ def calculate_reward(arm_ind, y, new_reward):
     if is_correct(arm_ind, y):
         reward = 0
     elif is_fuzz_correct(arm_ind, y):
-        reward = - 0.275
+        reward = -0.4375
     else:
-        reward = new_reward
+        reward = -0.88125
     regret = -reward
     return regret, reward
 
@@ -117,7 +117,7 @@ def run_linucb(new_reward):
         regret, reward = calculate_reward(arm, dose, new_reward)
         
         num_correct += 1 if is_correct(arm, dose) else 0
-        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=3.5) else 0
+        num_fuzz_correct += 1 if is_fuzz_correct(arm, dose, eps=7) else 0
         total_regret += regret
 
         linucb.update(arm, reward, features)
@@ -150,24 +150,25 @@ Started with -1, descending, gave value of
 Things to do:
 '''
 if __name__ == "__main__":
-    new_reward = -1.1
+    new_reward = -0.4375
     step_size = 0.1
     num_iters = 20
     prev_acc = 0
     multiplier = -1 #marks if we're adding or subtracting from new_reward
 
+
     while step_size > 0.005:
     	print("Trying with intermediate reward of: " + str(new_reward))
     	cur_accs = []
-    	for j in range(50):
+    	for j in range(10):
     		cur_accs.append(run_linucb(new_reward))
     	cur_acc = np.mean(cur_accs)
     	print("Fuzzy accuracy was: " + str(cur_acc))
     	if cur_acc < prev_acc:
     		multiplier = -multiplier
-    		step_size = step_size/1.5
+    		step_size = step_size/2
     	else:
-    		step_size = step_size * 1.5
+    		step_size = step_size
     	new_reward += multiplier * step_size
     	prev_acc = cur_acc
 
