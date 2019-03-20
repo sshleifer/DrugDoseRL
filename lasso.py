@@ -8,6 +8,7 @@ from linucb import UCB_FEATURES
 
 arms = ["low", "medium", "high"]
 
+
 class Lasso:
     def __init__(self, num_features, num_samples):
         self.order = get_sample_order(num_samples)
@@ -36,10 +37,7 @@ class Lasso:
     def select_arm(self, features):
         """A method that returns the index of the Arm that the Bandit object
         selects on the current play.
-
-        Arm 0 = "low", Arm 1 = "medium", Arm 2 = "high"
         """
-        # participating in force-sampling
         self.iter += 1
         force_base = (2**self.n - 1) * 3 * self.q
         diff = self.iter - force_base
@@ -82,7 +80,7 @@ class Lasso:
         self.lambda_2_t = self.lambda_2_0 * math.sqrt(
             (math.log(self.iter) + math.log(self.num_features)) / self.iter)
 
-        for i in range(3):  # forced Sampling
+        for i in range(3):
             T_idx = np.array(self.T_sets[i])
             T_idx = T_idx[T_idx <= self.iter]
             if np.size(T_idx) > 0:
@@ -97,8 +95,7 @@ class Lasso:
             self.S_beta[chosen_arm] = s_lasso.coef_
 
 
-
-def run_lasso(reward_style, eps, logging=True):
+def run_lasso(reward_style, eps, logging):
     if logging:
         log = open("log_lasso.txt", "w+")
     
@@ -112,7 +109,6 @@ def run_lasso(reward_style, eps, logging=True):
     total_regret = 0
     num_correct = 0
     num_fuzz_correct = 0
-    hist = []
 
     for i in tqdm(range(X_subset.shape[0])):
         if i > 0 and i % 100 == 0:
@@ -146,6 +142,7 @@ def run_lasso(reward_style, eps, logging=True):
 
     return acc, total_regret
 
+
 if __name__ == "__main__":
     logging = True
     reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy", "hill-climbing"]
@@ -158,5 +155,4 @@ if __name__ == "__main__":
             run_iters(num_iters, run_lasso, r, eps, logging)
     else:
         run_iters(num_iters, run_lasso, reward_styles[5], eps, logging)
-    # run_lasso()
 

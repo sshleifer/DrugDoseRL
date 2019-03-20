@@ -30,5 +30,4 @@ def get_features():
     feature_df = pd.get_dummies(data, columns=DUMMY_COLS)
     target = feature_df['warfarin']
     num_cols = get_num_cols(feature_df).drop('warfarin')
-    #import ipdb; ipdb.set_trace()
     return feature_df[num_cols].fillna(-1).astype(float), target

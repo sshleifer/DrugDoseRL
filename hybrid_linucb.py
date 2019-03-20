@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import math
 from tqdm import tqdm
 from get_features import get_features
@@ -7,6 +6,7 @@ from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_co
 from linucb import UCB_FEATURES
 
 arms = ["low", "medium", "high"]
+
 
 class HybridLinUCB:
     def __init__(self, num_z_features, num_x_features, num_samples):
@@ -18,14 +18,11 @@ class HybridLinUCB:
         self.A_shared = np.identity(num_z_features)
         self.b_shared = np.zeros(num_z_features)
 
-
     def select_arm(self, z_features, x_features):
         """A method that returns the index of the Arm that the Bandit object
         selects on the current play.
 
         We will use the same features for both hybrid and individual features.
-
-        Arm 0 = "low", Arm 1 = "medium", Arm 2 = "high"
         """
         beta = np.dot(np.linalg.inv(self.A_shared), self.b_shared)
         p_vals = []
@@ -61,7 +58,8 @@ class HybridLinUCB:
         self.b_shared = self.b_shared + (z_features * reward
             - np.matmul(self.B_lst[chosen_arm].T, np.dot(np.linalg.inv(self.A_lst[chosen_arm]), self.b_lst[chosen_arm])))
 
-def run_hybrid_linucb(reward_style, eps, logging=True):
+
+def run_hybrid_linucb(reward_style, eps, logging):
     if logging:
         log = open("log_hybrid_linucb.txt", "w+")
 
@@ -78,7 +76,6 @@ def run_hybrid_linucb(reward_style, eps, logging=True):
     total_regret = 0
     num_correct = 0
     num_fuzz_correct = 0
-    hist = []
 
     for i in tqdm(range(X_z_subset.shape[0])):
         if i > 0 and i % 100 == 0:
@@ -97,7 +94,6 @@ def run_hybrid_linucb(reward_style, eps, logging=True):
         total_regret += regret
         
         hybrid_linucb.update(arm, reward, z_features, x_features)
-        hist.append(arm)
         if logging:
             log.write("Sample %s: Using z features %s\n, x features %s\n" % (row_num, z_features, x_features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
@@ -114,6 +110,7 @@ def run_hybrid_linucb(reward_style, eps, logging=True):
 
     return acc, total_regret
 
+
 if __name__ == "__main__":
     logging = True
     reward_styles = ["standard", "risk-sensitive", "prob-based", "proportional", "fuzzy", "hill-climbing"]
@@ -126,4 +123,3 @@ if __name__ == "__main__":
             run_iters(num_iters, run_hybrid_linucb, r, eps, logging)
     else:
         run_iters(num_iters, run_hybrid_linucb, reward_styles[5], eps, logging)
-    # run_hybrid_linucb()
