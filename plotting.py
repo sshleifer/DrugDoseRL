@@ -17,3 +17,6 @@ def make_plot():
         #bbox_to_anchor=(1.04, 1),
         loc='bottom left')
     ax.set(ylim=0.45)
+    # dont know how to label lines
+    plt.axhline(.6127)
+    plt.axhline(.6422)
