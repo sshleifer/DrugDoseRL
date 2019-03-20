@@ -22,8 +22,19 @@ DUMMY_COLS = ['Gender', 'VKORC1 3730 consensus', 'VKORC1 1542 consensus',
        'Race', 'Combined QC CYP2C9',
        'Estimated Target INR Range Based on Indication', 'Cyp2C9 genotypes',
        'CYP2C9 consensus']
+
 ENZYME_COLS = [
     "Carbamazepine (Tegretol)",
     "Phenytoin (Dilantin)",
     "Rifampin or Rifampicin",
 ]
+
+ALL_CYP_FEATURES = ['Combined QC CYP2C9_*1/*1', 'Combined QC CYP2C9_*1/*2',
+       'Combined QC CYP2C9_*1/*3', 'Combined QC CYP2C9_*2/*2',
+       'Combined QC CYP2C9_*2/*3', 'Combined QC CYP2C9_*3/*3',
+       'CYP2C9 consensus_*1/*1', 'CYP2C9 consensus_*1/*11',
+       'CYP2C9 consensus_*1/*13', 'CYP2C9 consensus_*1/*14',
+       'CYP2C9 consensus_*1/*2', 'CYP2C9 consensus_*1/*3',
+       'CYP2C9 consensus_*1/*5', 'CYP2C9 consensus_*1/*6',
+       'CYP2C9 consensus_*2/*2', 'CYP2C9 consensus_*2/*3',
+       'CYP2C9 consensus_*3/*3']

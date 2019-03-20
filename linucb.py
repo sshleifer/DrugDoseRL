@@ -2,19 +2,9 @@ import numpy as np
 import math
 from tqdm import tqdm
 from get_features import get_features
-from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct, show_hist
+from utils import dose2str, get_sample_order, run_iters, calculate_reward, is_correct, is_fuzz_correct
 
 arms = ["low", "medium", "high"]
-
-ALL_CYP_FEATURES = ['Combined QC CYP2C9_*1/*1', 'Combined QC CYP2C9_*1/*2',
-       'Combined QC CYP2C9_*1/*3', 'Combined QC CYP2C9_*2/*2',
-       'Combined QC CYP2C9_*2/*3', 'Combined QC CYP2C9_*3/*3',
-       'CYP2C9 consensus_*1/*1', 'CYP2C9 consensus_*1/*11',
-       'CYP2C9 consensus_*1/*13', 'CYP2C9 consensus_*1/*14',
-       'CYP2C9 consensus_*1/*2', 'CYP2C9 consensus_*1/*3',
-       'CYP2C9 consensus_*1/*5', 'CYP2C9 consensus_*1/*6',
-       'CYP2C9 consensus_*2/*2', 'CYP2C9 consensus_*2/*3',
-       'CYP2C9 consensus_*3/*3']
 
 UCB_FEATURES = [
     'Age', 'Weight (kg)', 'Height (cm)',
@@ -29,7 +19,6 @@ UCB_FEATURES = [
     'Ethnicity_not Hispanic or Latino',
     'Diabetes', 'Congestive Heart Failure and/or Cardiomyopathy', 'bias',
 
-    # proxies for unknown CYP/VKOR
     'cyp_sum', 'vko_sum',
 
     'CYP2C9 consensus_*1/*2',
@@ -38,14 +27,12 @@ UCB_FEATURES = [
     'CYP2C9 consensus_*2/*3',
     'CYP2C9 consensus_*3/*3',
 
-
     'VKORC1 -1639 consensus_G/G',
     'VKORC1 1542 consensus_G/G',
     'VKORC1 genotype: 1173 C>T(6484); chr16:31012379; rs9934438; A/G_C/C',
     'VKORC1 genotype: 1542G>C (6853); chr16:31012010; rs8050894; C/G_G/G',
     'VKORC1 genotype: -1639 G>A (3673); chr16:31015190; rs9923231; C/T_G/G',
     'VKORC1 1173 consensus_C/C',
-
 ]
 assert len(UCB_FEATURES) == len(set(UCB_FEATURES)), 'Please remove duplicate feature.'
 
@@ -54,16 +41,12 @@ class LinUCB:
     def __init__(self, num_features, num_samples):
         self.order = get_sample_order(num_samples)
         self.alpha = 0.5
-        # formula for alpha in paper
-
         self.A_lst = [np.identity(num_features)] * 3
         self.b_lst = [np.zeros(num_features)] * 3
 
     def select_arm(self, features):
         """A method that returns the index of the Arm that the Bandit object
         selects on the current play.
-
-        Arm 0 = "low", Arm 1 = "medium", Arm 2 = "high"
         """
         p_vals = []
         for i in range(3):
@@ -81,7 +64,7 @@ class LinUCB:
         self.b_lst[chosen_arm] = self.b_lst[chosen_arm] + features * reward
 
 
-def run_linucb(reward_style, eps, logging=True):
+def run_linucb(reward_style, eps, logging):
     if logging:
         log = open("log_linucb.txt", "w+")
     show_history = False
@@ -96,7 +79,6 @@ def run_linucb(reward_style, eps, logging=True):
     total_regret = 0
     num_correct = 0
     num_fuzz_correct = 0
-    hist = []
 
     for i in tqdm(range(X_subset.shape[0])):
         if i > 0 and i % 100 == 0:
@@ -114,15 +96,12 @@ def run_linucb(reward_style, eps, logging=True):
         total_regret += regret
 
         linucb.update(arm, reward, features)
-        hist.append(arm) #useful for plotting results
         if logging:
             log.write("Sample %s: Using features %s\n" % (row_num, features))
             log.write("Chose arm %s with reward %s\n" % (arms[arm], reward))
             log.write("Correct dose was %s (%s)\n" % (dose2str(dose), dose))
 
     results = open("results/linucb/results_linucb_%s.txt" % reward_style, "a+")
-    if show_history:
-        show_hist(hist)
 
     acc = num_correct / X.shape[0]
     fuzz_acc = num_fuzz_correct / X.shape[0]
@@ -149,5 +128,4 @@ if __name__ == "__main__":
             run_iters(num_iters, run_linucb, r, eps, logging)
     else:
         run_iters(num_iters, run_linucb, reward_styles[5], eps, logging)
-    # run_linucb()
 
