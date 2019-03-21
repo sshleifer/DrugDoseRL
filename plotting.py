@@ -80,15 +80,18 @@ def make_plots():
 
 def make_ts_plot():
     run_dfs = pd.read_msgpack('all_runs_data.mp')
-    models = run_dfs['Model'].unique()
-    for m in models:
-        sns.lineplot(x='Step', y='Accuracy', data=run_dfs[run_dfs['Model'] == m], hue=rs)
+    rs = 'Reward Structure'
+    for r in run_dfs[rs].unique():
+        sns.lineplot(x='Step', y='Accuracy', data=run_dfs[run_dfs[rs] == r], hue='Model')
         plt.legend(
             bbox_to_anchor=(1.04, 1),
             loc='upper left')
-        plt.title(m)
+        if r == 'prob-based':
+            r = 'Probability Based'
+        elif r == 'risk-sensitive':
+            r = 'Adjacent-Arm'
+        plt.title(r.capitalize())
         plt.show()
-        plt.savefig(f'tsplot_{m}')
 
 
 make_plots()
