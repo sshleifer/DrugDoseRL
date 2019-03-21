@@ -4,7 +4,7 @@ Obtains meta data about results_* files
 
 import numpy as np
 
-file_names = ["results_linucb_risk-sensitive.txt", "results_linucb_standard.txt", "results_linucb_fuzzy.txt"]
+file_names = ["results_linucb_standard.txt", "results_linucb_risk-sensitive.txt", "results_linucb_fuzzy.txt","results_linucb_hill-climb-risk-sensitive.txt"]
 for file_name in file_names:
 	print("Calculating metadata for " + file_name)
 	log = open(file_name, "r")
