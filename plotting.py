@@ -78,5 +78,17 @@ def make_plots():
     
     plt.savefig('./plots/acc-prob.png')
 
+def make_ts_plot():
+    run_dfs = pd.read_msgpack('all_runs_data.mp')
+    models = run_dfs['Model'].unique()
+    for m in models:
+        sns.lineplot(x='Step', y='Accuracy', data=run_dfs[run_dfs['Model'] == m], hue=rs)
+        plt.legend(
+            bbox_to_anchor=(1.04, 1),
+            loc='upper left')
+        plt.title(m)
+        plt.show()
+        plt.savefig(f'tsplot_{m}')
+
 
 make_plots()
