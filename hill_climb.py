@@ -56,27 +56,6 @@ def hill_climb(new_reward):
     fuzz_acc = num_fuzz_correct / X.shape[0]
     return fuzz_acc
 
-'''
-REMEMBER TO DELETE THESE COMMENTS
-linucb with stand reward struct gives fuzzacc = 0.7880451812716344
-linucb with fuzzy reward struct gives fuzzacc = 0.7930205866278012
-
-Things I've tried: (tuning is_fuzz_acc reward)
-Started with -0.5, descending, gave value of -0.725 with fuzzacc =  0.791956640553835
-Started with -0.725, descending, gave value of -0.78125 with fuzzacc =  0.7903261067589726
-
-Started with -0.5, ascending, gave value of -0.38125 with fuzzacc = 0.7935143013299325
-Started with -0.3, descending, gave value of -0.196875 with fuzzacc = 0.7943159045363455
-
-Started with -0.2, descending, gave value of -0.265625 with fuzzacc =  0.794279468026963
-
-
-(tuning is incorrect reward (is fuzz rew = -.275)):
-Started with -0.275, descending, gave value of -0.65 with fuzzacc = 0.7922663508835852
-Started with -1, descending, gave value of 
-Things to do:
-'''
-
 if __name__ == "__main__":
     new_reward = -0.4375
     step_size = 0.1
